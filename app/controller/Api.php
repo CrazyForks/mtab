@@ -18,21 +18,24 @@ class Api extends BaseController
 {
     public function site(): \think\response\Json
     {
-        $auth = false;
-        if ($this->Setting('authCode', env('authCode', false), true)) {
-            $auth = true;
-        }
         return $this->success("ok", [
             'email' => $this->Setting('email', ''),
             'qqGroup' => $this->Setting("qqGroup", ''),
             'beianMps' => $this->Setting("beianMps", ''),
             'copyright' => $this->Setting("copyright", ''),
             "recordNumber" => $this->Setting("recordNumber", ''),
-            "auth" => $auth
+            "auth" => $this->auth,
+            "logo" => $this->Setting('logo', '')
         ]);
     }
 
     public function background(): \think\response\File
+    {
+        return download('static/background.jpeg', 'background.jpeg')->mimeType(\PluginStaticSystem::mimeType('static/background.jpeg'))->force(false)->expire(60 * 60 * 24 * 3);
+    }
+
+    //获取默认壁纸
+    function DefBg()
     {
         $config = $this->Setting('defaultTab', 'static/defaultTab.json', true);
         if ($config) {
@@ -42,14 +45,12 @@ class Api extends BaseController
                 $json = json_decode($file, true);
                 if (isset($json['config']['theme']['backgroundImage'])) {
                     $bg = $json['config']['theme']['backgroundImage'];
-                    $path = joinPath(public_path(), $bg);
-                    if (file_exists($path)) {
-                        return download($path, 'background')->mimeType(\PluginStaticSystem::mimeType($path))->force(false)->expire(60 * 60 * 24 * 3);
-                    }
+                    $bgMime = $json['config']['theme']['backgroundMime'] ?? 0;
+                    return $this->success("ok", ['background' => $bg, "mime" => $bgMime]);
                 }
             }
         }
-        return download("static/background.jpeg", "background.jpeg")->mimeType(\PluginStaticSystem::mimeType("static/background.jpeg"))->force(false)->expire(60 * 60 * 24 * 3);
+        return $this->success("ok", ['background' => "static/background.jpeg", "mime" => 0]);
     }
 
     function globalNotify()
@@ -84,7 +85,6 @@ class Api extends BaseController
                             </div>
                         </div>
                 ';
-
             }
             $html = View::display($k, ['time' => date('Y-m-d H:i:s'), 'code' => $code]);
             $status = \Mail::send($mail, $html);
@@ -283,12 +283,19 @@ class Api extends BaseController
 
     function upload(): \think\response\Json
     {
+        $user = $this->getUser();
+        if (!$user) {
+            if ($this->Setting('touristUpload') !== '1') {
+                //如果没有开启游客上传
+                return $this->error('管理员已关闭游客上传！请登录后使用');
+            }
+        }
         $file = $this->request->file('file');
         if (empty($file)) {
             return $this->error('not File');
         }
-        if ($file->getSize() > 1024 * 1024 * 5) {
-            return $this->error('文件最大5MB');
+        if ($file->getSize() > 1024 * 1024 * 2) {
+            return $this->error('文件最大2MB,请压缩后再试');
         }
         if (in_array(strtolower($file->getOriginalExtension()), ['png', 'jpg', 'jpeg', 'webp', 'ico', 'svg'])) {
             // 验证文件并保存
@@ -343,11 +350,5 @@ class Api extends BaseController
             return $this->success("ok", $data);
         }
         return $this->error("not login");
-    }
-
-    function ts()
-    {
-        $k = SettingModel::Config('smtp_code_template');
-        return View::display($k, ["time" => date("Y-m-d H:i:s"), 'code' => 123456]);
     }
 }

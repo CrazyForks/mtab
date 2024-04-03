@@ -6,6 +6,7 @@ namespace app\controller;
 
 use app\BaseController;
 use app\model\TabbarModel;
+use think\facade\Cache;
 
 class Tabbar extends BaseController
 {
@@ -32,7 +33,7 @@ class Tabbar extends BaseController
     {
         $user = $this->getUser();
         if ($user) {
-            $data = TabbarModel::find($user['user_id']);
+            $data = TabbarModel::where("user_id",$user['user_id'])->find();
             if ($data) {
                 return $this->success('ok', $data['tabs']);
             }

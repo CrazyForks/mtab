@@ -14,4 +14,6 @@ class LinkStoreModel extends Model
 {
     protected $name = "linkstore";
     protected $pk = "id";
+    protected $jsonAssoc = true;
+    protected $json = ['custom'];
 }

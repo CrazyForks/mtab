@@ -151,6 +151,7 @@
       "url": "/noteApp",
       "type": "icon",
       "app": 1,
+      "bgColor":"rgba(0,0,0,0)",
       "pid": null
     },
     {
@@ -184,7 +185,8 @@
       "name": "设置",
       "size": "1x1",
       "sort": 14,
-      "type": "icon"
+      "type": "icon",
+      "bgColor":"rgba(0,0,0,0)"
     }
   ],
   "tabbar": [
@@ -287,7 +289,8 @@
       "tabbar": true
     },
     "theme": {
-      "backgroundImage": "/api/background",
+      "backgroundImage": "/static/background.jpeg",
+      "backgroundMime": 0,
       "blur": 0,
       "timeColor": "#fff",
       "tabbar": true,

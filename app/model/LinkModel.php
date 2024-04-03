@@ -17,4 +17,31 @@ class LinkModel extends Model
     protected $updateTime = "update_time";
     protected $jsonAssoc = true;
     protected $json = ['link'];
+    protected $WebApp = [];
+    protected $card = [];
+
+    public function __construct(array $data = [])
+    {
+        parent::__construct($data);
+        $list = LinkStoreModel::where("app", 1)->select()->toArray();
+        $tmp = [];
+        foreach ($list as $k => $v) {
+            $tmp[$v['id']] = $v;
+        }
+        $this->WebApp = $tmp;
+    }
+
+    function getLinkAttr($value): array
+    {
+        foreach ($value as $k => &$v) {
+            if (isset($v['app']) && $v['app'] == 1) {
+                if (isset($v['origin_id']) && $v['origin_id'] > 0) {
+                    if (isset($this->WebApp[(int)$v['origin_id']])) {
+                        $v['custom'] = $this->WebApp[(int)$v['origin_id']]['custom'];
+                    }
+                }
+            }
+        }
+        return (array)$value;
+    }
 }

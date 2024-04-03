@@ -318,7 +318,7 @@ EOF;
         <label for='redis_port'>数据库安装其他选项</label>
         <label for='install_other'></label>
         <label>
-            <input type='radio' name='database_type' value='1' required>
+            <input checked type='radio' name='database_type' value='1' required>
             全新安装(如果数据库存在则删除原来的数据库，重新安装)
         </label>
         <label>
@@ -393,7 +393,7 @@ EOF;
     </head>
     <body>
     <div class='container'>
-        <h1 style="align-content: center">网站安装完毕</h1>
+        <h1 style="align-content: center">mTab书签安装完毕</h1>
         <div style="display: flex;justify-content: center">
             <svg style="width: 100px" t='1694607796889' class='icon' viewBox='0 0 1024 1024' version='1.1'
                  xmlns='http://www.w3.org/2000/svg'
@@ -402,11 +402,17 @@ EOF;
                       fill='#54E283' p-id='40461'></path>
             </svg>
         </div>
-        <p>欢迎使用Mtab书签，<br>点击下方按钮跳转到首页。</p>
+        <p>欢迎使用mTab书签，<br>点击下方按钮跳转到首页。</p>
         <div class='btn-container'>
             <a class='btn' href='/'>进入首页</a>
         </div>
-        <p>后台进入方式，需要用管理员账户登录客户端<br/> <b>进入设置->个人中心->管理后台</b></p>
+        <p>后台进入方式，需要用管理员账户登录客户端<br/></p>
+        <p> <b>鼠标在桌面右击打开菜单->点击设置->个人中心->登录管理员的账号</b><br/>
+            <b>
+                ->再次进入个人中心即可看到->管理后台->进入即可</b></p>
+        <p>这是一个多用户的书签导航程序，用户之间数据是隔离的不受干扰</p>
+        <p>可以使用鼠标右键在桌面点击呼出菜单。</p>
+        <p>很多功能就在鼠标右键菜单内。别怪我没告诉你哟hahaha~</p>
     </div>
     </body>
     </html>

@@ -4,7 +4,10 @@ namespace app\controller\admin;
 
 use app\BaseController;
 use app\model\CardModel;
+use app\model\ConfigModel;
 use app\model\SettingModel;
+use http\Header;
+use League\Flysystem\Exception;
 use think\facade\Cache;
 use think\facade\Db;
 
@@ -14,6 +17,7 @@ class Index extends BaseController
 {
     public $authService = "https://auth.mtab.cc";
     public $authCode = '';
+
 
     function setSubscription(): \think\response\Json
     {
@@ -35,6 +39,7 @@ class Index extends BaseController
         $this->authCode = $authCode;
         $this->authService = $this->Setting('authServer', 'https://auth.mtab.cc', true);
     }
+
 
     function updateApp($n = 0): \think\response\Json
     {
@@ -94,26 +99,39 @@ class Index extends BaseController
     {
         $this->getAdmin();
         $this->initAuth();
-        $result = \Axios::http()->post($this->authService . '/checkAuth', [
-            'timeout' => 10,
-            'form_params' => [
-                'authorization_code' => $this->authCode,
-                'version_code' => app_version_code,
-                'domain' => request()->domain()
-            ]
-        ]);
         $info = [];
         $info['version'] = app_version;
         $info['version_code'] = app_version_code;
         $info['php_version'] = phpversion();
-        if ($result->getStatusCode() == 200) {
-            $jsonStr = $result->getBody()->getContents();
-            $json = json_decode($jsonStr, true);
-            $info['remote'] = $json;
-            return $this->success($info);
-        } else {
-            return $this->error('授权服务器连接失败', $info);
+        try {
+            $result = \Axios::http()->post($this->authService . '/checkAuth', [
+                'timeout' => 10,
+                'form_params' => [
+                    'authorization_code' => $this->authCode,
+                    'version_code' => app_version_code,
+                    'domain' => request()->domain()
+                ]
+            ]);
+            if ($result->getStatusCode() == 200) {
+                $jsonStr = $result->getBody()->getContents();
+                $json = json_decode($jsonStr, true);
+                $info['remote'] = $json;
+                if (!isset($json['auth'])) {
+                    $f = SettingModel::where('keys', 'authCode')->find();
+                    if ($f) {
+                        $f->value = '';
+                        $f->save();
+                    }
+                    Cache::delete('webConfig');
+                }
+                return $this->success($info);
+            }
+        } catch (\Exception $e) {
         }
+        $info['remote'] = [
+            "auth" => (bool)$this->authCode
+        ];
+        return $this->success('授权服务器连接失败', $info);
     }
 
 
@@ -121,13 +139,13 @@ class Index extends BaseController
     {
         $this->getAdmin();
         $this->initAuth();
-        $result = \Axios::http()->post($this->authService . '/card', [
-            'timeout' => 15,
-            'form_params' => [
-                'authorization_code' => $this->authCode
-            ]
-        ]);
         try {
+            $result = \Axios::http()->post($this->authService . '/card', [
+                'timeout' => 15,
+                'form_params' => [
+                    'authorization_code' => $this->authCode
+                ]
+            ]);
             $json = $result->getBody()->getContents();
             $json = json_decode($json, true);
             if ($json['code'] === 1) {
@@ -278,4 +296,5 @@ class Index extends BaseController
         }
         return $this->error('新版本没有提供下载地址！');
     }
+
 }

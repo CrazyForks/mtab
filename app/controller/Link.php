@@ -7,6 +7,8 @@ use app\model\ConfigModel;
 use app\model\HistoryModel;
 use app\model\LinkModel;
 use app\model\TabbarModel;
+use app\model\UserSearchEngineModel;
+use think\facade\Cache;
 
 class Link extends BaseController
 {
@@ -23,6 +25,7 @@ class Link extends BaseController
                 } else {
                     LinkModel::create(["user_id" => $user['user_id'], "link" => $link]);
                 }
+                Cache::delete("Link.{$user['user_id']}");
                 HistoryModel::create(["user_id" => $user['user_id'], "link" => $link]); //历史记录备份,用于用户误操作恢复用途
                 return $this->success('ok');
             }
@@ -32,11 +35,18 @@ class Link extends BaseController
 
     public function get(): \think\response\Json
     {
+
         $user = $this->getUser();
         if ($user) {
-            $data = LinkModel::find($user['user_id']);
+            $c = Cache::get("Link.{$user['user_id']}");
+            if ($c) {
+                return $this->success('ok', $c);
+            }
+            $data = LinkModel::where('user_id', $user['user_id'])->find();
             if ($data) {
-                return $this->success('ok', $data['link']);
+                $c = $data['link'];
+                Cache::tag("linkCache")->set("Link.{$user['user_id']}", $c, 60 * 60);
+                return $this->success('ok', $c);
             }
         }
         $config = $this->Setting("defaultTab", 'static/defaultTab.json', true);
@@ -51,12 +61,20 @@ class Link extends BaseController
         return $this->success('ok', []);
     }
 
+    function refreshWebAppCache(): \think\response\Json
+    {
+        $this->getAdmin();
+        Cache::tag('linkCache')->clear();
+        return $this->success('刷新完毕');
+    }
+
     public function reset(): \think\response\Json
     {
         $user = $this->getUser();
         if ($user) {
             $data = LinkModel::find($user['user_id']);
             if ($data) {
+                Cache::delete("Link.{$user['user_id']}");
                 $data->delete();
             }
             $data = TabbarModel::find($user['user_id']);
@@ -64,6 +82,10 @@ class Link extends BaseController
                 $data->delete();
             }
             $data = ConfigModel::find($user['user_id']);
+            if ($data) {
+                $data->delete();
+            }
+            $data = UserSearchEngineModel::find($user['user_id']);
             if ($data) {
                 $data->delete();
             }

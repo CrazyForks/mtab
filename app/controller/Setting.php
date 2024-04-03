@@ -25,6 +25,7 @@ class Setting extends BaseController
         }
         Db::table('setting')->replace()->insertAll($tmp);
         Cache::delete('webConfig');
+        (new \app\controller\admin\Index(app()))->authorization();
         return $this->success('保存成功');
     }
     function refreshCache(): \think\response\Json

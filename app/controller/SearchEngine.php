@@ -96,6 +96,7 @@ class SearchEngine extends BaseController
         foreach ($sort as $key => $value) {
             SearchEngineModel::where("id", $value['id'])->update(['sort' => $value['sort']]);
         }
+        Cache::delete('searchEngine');
         return $this->success("ok");
     }
 }

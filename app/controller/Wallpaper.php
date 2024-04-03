@@ -74,7 +74,7 @@ class Wallpaper extends BaseController
         $this->getAdmin();
         $folder_id = $this->request->post("id");
         if ($folder_id) {
-            $list = WallpaperModel::where("type", 0)->where("folder", $folder_id)->order("create_time", 'desc')->paginate($this->request->post("limit", 19));
+            $list = WallpaperModel::where('type', 0)->where("folder", $folder_id)->order("create_time", 'desc')->paginate($this->request->post("limit", 19));
             return $this->success("ok", $list);
         }
     }

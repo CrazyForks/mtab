@@ -72,9 +72,13 @@ create table linkstore
     app         int         default 0      null comment '是否app',
     install_num int         default 0      null comment '安装量',
     bgColor     varchar(30)                null comment '背景颜色',
+    vip         int         default 0      null comment '是否会员可见 0所有人 1=会员',
+    custom      text                       null comment '自定义配置',
     constraint linkStore_id_uindex
         unique (id)
 );
+
+
 
 create table note
 (

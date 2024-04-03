@@ -1,5 +1,7 @@
 FROM alpine:3.13
+
 LABEL describe="tushan-mtab"
+
 LABEL author ="tushan<admin@mcecy.com>"
 
 WORKDIR /
@@ -14,8 +16,9 @@ COPY ./docker/php.ini /php.ini
 
 COPY . /www
 
-RUN chmod +x /install.sh && /install.sh && rm /install.sh
-
+RUN chmod +x /install.sh /start.sh
+RUN /bin/sh /install.sh
+RUN rm /install.sh
 
 EXPOSE 80
 

@@ -3,6 +3,7 @@
 namespace app\controller;
 
 use app\BaseController;
+use app\model\ConfigModel;
 use app\model\LinkFolderModel;
 use app\model\LinkStoreModel;
 use think\facade\Db;
@@ -44,7 +45,7 @@ class LinkStore extends BaseController
             $list = $list->whereRaw("find_in_set('$area',area)");
         }
         $list = $list->order($this->request->post('sort.prop', 'id'), $this->request->post('sort.order', 'asc'))->paginate($limit);
-        return $this->success('ok', $list);
+        return json(["msg" => "ok", 'data' => $list, 'auth' => $this->auth]);
     }
 
     function getFolder(): \think\response\Json
@@ -138,6 +139,7 @@ class LinkStore extends BaseController
         }
         return $this->success('处理完毕！');
     }
+
     function moveFolder(): \think\response\Json
     {
         is_demo_mode(true);
@@ -147,6 +149,7 @@ class LinkStore extends BaseController
         LinkStoreModel::where('id', 'in', $ids)->update(['area' => $area]);
         return $this->success('处理完毕！');
     }
+
     function sortFolder()
     {
         $sort = (array)$this->request->post();
@@ -155,6 +158,7 @@ class LinkStore extends BaseController
         }
         return $this->success("ok");
     }
+
     public function del(): \think\response\Json
     {
         is_demo_mode(true);

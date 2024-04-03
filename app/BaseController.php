@@ -55,7 +55,7 @@ class BaseController
      */
     protected $user_temp = false;
     private $SettingConfig = false;
-
+    public $auth = false;
     public function __construct(App $app)
     {
 
@@ -68,7 +68,9 @@ class BaseController
     // 初始化
     protected function initialize()
     {
-
+        if ($this->Setting('authCode', env('authCode', false), true)) {
+            $this->auth = true;
+        }
     }
 
     //系统设置项
