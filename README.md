@@ -1,8 +1,10 @@
-# Mtab书签
+# mTab新标签页
 
-[Mtab书签官网](https://mtab.cc)
+![logo](https://download.mtab.cc/imagesHouse/mTabReadme/192.png?x-image-process=image/resize,m_lfit,w_120)
 
-![](https://cn.mcecy.com/image/20231010/e738fe3a7db1a6323f8146830d835aab.jpg)
+### [mTab书签官网](https://mtab.cc) | [安装文档](https://mtab.cc/document.html)  | [作者Blog](https://blog.mcecy.com)
+
+![](https://download.mtab.cc/imagesHouse/mTabReadme/1.png?x-image-process=image/resize,m_lfit,w_900)
 
 
 ### 主要有以下特点
@@ -20,7 +22,7 @@
 Mtab书签的界面设计美观简洁，操作简单直观，让你可以专注于你的网络活动，而不是应用本身。它是你高效、无忧的网络生活的理想伴侣。
 高效流畅的操作体验：超级简约却强大的操作逻辑，没有繁琐的操作流程即可处理复杂的事情。
 
-### Demo演示站
+## Demo演示站
 
 #### **[演示站Demo入口](https://demo.mtab.cc)**
 
@@ -29,52 +31,49 @@ Mtab书签的界面设计美观简洁，操作简单直观，让你可以专注�
 演示密码：123456
 
 
-# Mtab安装教程
-[Documents](https://mtab.cc/document.html)  | [作者Blog](https://blog.mcecy.com)
+## Docker部署方式
 
-### Docker部署方式
+镜像： itushan/mtab
 
-镜像： `itushan/mtab`
+视频教程： https://www.bilibili.com/video/BV1ee411B7fY/
 
-部署命令： `docker run -itd --name mtab -p 9200:80 -v /opt/mtab:/app itushan/mtab`
+部署命令： docker run -itd --name mtab -p 9200:80 -v /opt/mtab:/app itushan/mtab
 
-命令解释： 其中 9200 可改为你服务器的其他端口。 `/opt/mtab` 可改为是你服务器的目录挂载路径，容器内目录和端口必须是 **80** 和 **/app**，--name为自定义容器名称。
+命令解释： 其中 9200 可改为你服务器的其他端口。 /opt/mtab 可改为是你服务器的目录挂载路径，容器内目录和端口必须是 80 和 /app，--name为自定义容器名称。
 
-可视化部署： 群晖等其他管理面板请拉取 `itushan/mtab` 镜像。服务器端口请自己填写，容器请填写 80 ，服务器目录请填写自己想挂载的目录，容器部分请填写 `/app`。
+可视化部署： 群晖等其他管理面板请拉取 itushan/mtab 镜像。服务器端口请自己填写，容器请填写 80 ，服务器目录请填写自己想挂载的目录，容器部分请填写 /app。
 
-程序数据库安装： 部署完docker后访问您设置的端口，然后填写一些数据库和redis等基础配置后点击 安装 按钮即可等待安装完成， 注意的是容器部署下数据库和redis地址请不要填写127.0.0.1,因为容器内127.0.0.1不指向宿主机网络。程序安装后选择的redis库是0，可以在程序根目录.env文件修改SELECT的值（0-16范围）改为你想使用的db。
+程序数据库安装： 部署完docker后访问您设置的端口，然后填写一些数据库配置后点击 安装 按钮即可等待安装完成， 注意的是容器部署下数据库地址请不要填写127.0.0.1,因为容器内127.0.0.1不指向宿主机网络。
 
 最后事项： 最后如果要使用外网访问，为了安全请使用Nginx反向代理或者CDN来代理您创建时填写的端口，并且配置SSL证书启用HTTPS，纯内网环境请随意啦。
 
-### 源码部署方式（此教程基于宝塔面板编写推荐使用宝塔面板部署）
+### docker-compose.yml
 
-**准备环境 Linux系统+php7.4+mysql8(mysql5.7也行，支持json就行)+Nginx+Redis;**
+在你想安装的目录创建docker-compose.yml，然后安装的目录执行`docker-compose  up -d `即可
 
-php请安装**redis,fileinfo,zip,curl,mysqli,json,json**等常用的扩展，然后并且解除一些禁用函数（宝塔默认禁用了一些函数）
-需要去php.ini去解除
-
-需要解除的函数具体如下,或者全部解除也可以
-
-`shell_exec,putenv`
-
-1，首先将代码下载到服务器网站目录下并且解压。
-
-2，然后将解压出来的程序目录以及子目录全部授权>=755以上的权限。
-
-3，将Nginx的网站目录设置为程序目录下的 public 目录。一定要配置伪静态规则
-
-nginx的伪静态配置代码
-
-``` javascript
-location ~^/ {
-    if (!-e $request_filename){
-        rewrite  ^(.*)$  /index.php?s=$1  last;   break;
-    }
-}
+```yml
+version: '3'
+services:
+  mtabServer:
+    image: itushan/mtab
+    container_name: mtabServer
+    user: "${USER_ID}:${GROUP_ID}"
+    ports:
+      - "9200:80"
+    volumes:
+      - ./:/app
+    restart: always
 ```
-4，然后配置好域名或者通过你自己的服务器的ip访问网站，不出意外会出现安装 页面，填写好一些基础的配置信息安装即可。（填写配置信息的是后请确保数据库账户和redis相关信息正确）
 
-5，安装完成后即可访问网站，可通过登录安装时填写的账户登录网站进入后台
+## 附几张部署后
+
+![](https://download.mtab.cc/imagesHouse/mTabReadme/1.png?x-image-process=image/resize,m_lfit,w_1200)
+
+<img src="https://download.mtab.cc/imagesHouse/mTabReadme/2.png?x-image-process=image/resize,m_lfit,w_600" style="width: 50%;"><img src="https://download.mtab.cc/imagesHouse/mTabReadme/3.png?x-image-process=image/resize,m_lfit,w_600" style="width: 50%;">
+
+<img src="https://download.mtab.cc/imagesHouse/mTabReadme/4.png?x-image-process=image/resize,m_lfit,w_900" style="width: 33.3%;"><img src="https://download.mtab.cc/imagesHouse/mTabReadme/5.png?x-image-process=image/resize,m_lfit,w_900" style="width: 33.3%;"><img src="https://download.mtab.cc/imagesHouse/mTabReadme/6.png?x-image-process=image/resize,m_lfit,w_900" style="width: 33.3%;">
+
+<img src="https://download.mtab.cc/imagesHouse/mTabReadme/8.png?x-image-process=image/resize,m_lfit,w_900" style="width: 50%;"><img src="https://download.mtab.cc/imagesHouse/mTabReadme/7.png?x-image-process=image/resize,m_lfit,w_900" style="width: 50%;">
 
 
 ### 交流QQ群：694155153
