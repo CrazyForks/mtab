@@ -64,7 +64,7 @@ services:
       - ./:/app
     restart: always
 ```
-## 附几张部署后
+## 预览图
 
 ![](https://raw.githubusercontent.com/tsxcw/imagesHouse/itushan/mTabReadme/1.png)
 <img src="https://raw.githubusercontent.com/tsxcw/imagesHouse/itushan/mTabReadme/2.png" width="50%"><img src="https://raw.githubusercontent.com/tsxcw/imagesHouse/itushan/mTabReadme/3.png" width="50%">
@@ -76,3 +76,8 @@ services:
 [![Security Status](https://www.murphysec.com/platform3/v31/badge/1721830089090732032.svg)](https://www.murphysec.com/console/report/1721830088713244672/1721830089090732032)
 
 
+<style>
+img{
+display:inline-block;
+}
+</style>
