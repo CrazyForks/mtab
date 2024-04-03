@@ -71,6 +71,4 @@ services:
 <img src="https://raw.githubusercontent.com/tsxcw/imagesHouse/itushan/mTabReadme/4.png" width="33.3%"><img src="https://raw.githubusercontent.com/tsxcw/imagesHouse/itushan/mTabReadme/5.png" width="33.3%"><img src="https://raw.githubusercontent.com/tsxcw/imagesHouse/itushan/mTabReadme/6.png" width="33.3%">
 <img src="https://raw.githubusercontent.com/tsxcw/imagesHouse/itushan/mTabReadme/8.png" width="50%"><img src="https://raw.githubusercontent.com/tsxcw/imagesHouse/itushan/mTabReadme/7.png" width="50%">
 
-### 交流QQ群：694155153
-
-[![Security Status](https://www.murphysec.com/platform3/v31/badge/1721830089090732032.svg)](https://www.murphysec.com/console/report/1721830088713244672/1721830089090732032)
+## 交流QQ群：694155153
