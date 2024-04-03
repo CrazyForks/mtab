@@ -69,15 +69,11 @@ services:
 
 ![](https://download.mtab.cc/imagesHouse/mTabReadme/1.png?x-image-process=image/resize,m_lfit,w_1200)
 
-<img src="https://download.mtab.cc/imagesHouse/mTabReadme/2.png?x-image-process=image/resize,m_lfit,w_600" width="50%">
-<img src="https://download.mtab.cc/imagesHouse/mTabReadme/3.png?x-image-process=image/resize,m_lfit,w_600" width="50%">
+<img src="https://download.mtab.cc/imagesHouse/mTabReadme/2.png" width="50%"><img src="https://download.mtab.cc/imagesHouse/mTabReadme/3.png" width="50%">
 
-<img src="https://download.mtab.cc/imagesHouse/mTabReadme/4.png?x-image-process=image/resize,m_lfit,w_900" width="33.3%">
-<img src="https://download.mtab.cc/imagesHouse/mTabReadme/5.png?x-image-process=image/resize,m_lfit,w_900" width="33.3%">
-<img src="https://download.mtab.cc/imagesHouse/mTabReadme/6.png?x-image-process=image/resize,m_lfit,w_900" width="33.3%">
+<img src="https://download.mtab.cc/imagesHouse/mTabReadme/4.png" width="33.3%"><img src="https://download.mtab.cc/imagesHouse/mTabReadme/5.png" width="33.3%"><img src="https://download.mtab.cc/imagesHouse/mTabReadme/6.png" width="33.3%">
 
-<img src="https://download.mtab.cc/imagesHouse/mTabReadme/8.png?x-image-process=image/resize,m_lfit,w_900" width="50%">
-<img src="https://download.mtab.cc/imagesHouse/mTabReadme/7.png?x-image-process=image/resize,m_lfit,w_900" width="50%">
+<img src="https://download.mtab.cc/imagesHouse/mTabReadme/8.png" width="50%"><img src="https://download.mtab.cc/imagesHouse/mTabReadme/7.png" width="50%">
 
 
 ### 交流QQ群：694155153
