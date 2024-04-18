@@ -29,5 +29,6 @@ return [
     'http_exception_template' => [
         404 => public_path() . '404.html',
         401 => \think\facade\App::getAppPath() . '401.html',
-    ]
+    ],
+
 ];

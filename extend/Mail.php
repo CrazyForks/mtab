@@ -10,9 +10,9 @@ class Mail
     {
         $mail = new Message;
         $send_mail = SettingModel::Config('smtp_email');
-        $mail->setFrom(SettingModel::Config('title','')." <$send_mail>")
+        $mail->setFrom(SettingModel::Config('title', '') . " <$send_mail>")
             ->addTo($to)
-            ->setSubject(SettingModel::Config('title','') . '动态令牌')
+            ->setSubject(SettingModel::Config('title', '') . '动态令牌')
             ->setHtmlBody($text);
         $mailer = new SmtpMailer([
             'port' => SettingModel::Config('smtp_port'),
@@ -21,11 +21,7 @@ class Mail
             'password' => SettingModel::Config('smtp_password'),
             'secure' => 'ssl',
         ]);
-        try {
-            $mailer->send($mail);
-        } catch (\Throwable $th) {
-            return false;
-        }
+        $mailer->send($mail);
         return true;
     }
 }

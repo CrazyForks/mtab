@@ -24,6 +24,7 @@ class Index extends BaseController
         View::assign("favicon", SettingModel::Config('logo', '/favicon.ico'));
         return View::fetch("dist/index.html");
     }
+
     function all()
     {
         $app = app();
@@ -41,6 +42,13 @@ class Index extends BaseController
         $dt['site'] = (new Api($app))->site()->getData()['data'];
         return $this->success("ok", $dt);
     }
+
+    function privacy()
+    {
+        $content = $this->Setting("privacy", "");
+        return View::fetch('/privacy', ['content' => $content,'title'=>$this->Setting("title",''), 'logo' => $this->Setting('logo', '')]);
+    }
+
     function favicon()
     {
         //从配置中获取logo

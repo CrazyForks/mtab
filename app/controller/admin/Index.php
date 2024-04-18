@@ -4,14 +4,10 @@ namespace app\controller\admin;
 
 use app\BaseController;
 use app\model\CardModel;
-use app\model\ConfigModel;
 use app\model\SettingModel;
-use http\Header;
-use League\Flysystem\Exception;
 use think\facade\Cache;
 use think\facade\Db;
 
-//use Upgrade;
 
 class Index extends BaseController
 {
@@ -65,7 +61,7 @@ class Index extends BaseController
                         require_once $upgradePhp;
                         $upGrade = new \Upgrade();
                     } catch (\Exception $e) {
-
+                        return $this->error($e->getMessage());
                     }
                 }
                 if ($upGrade === null) {
@@ -77,16 +73,14 @@ class Index extends BaseController
                 if (!empty($json['info']['update_sql'])) {
                     $upGrade->update_sql_url = $json['info']['update_sql'];
                 }
-                $status = $upGrade->run();//启动任务
                 try {
-                    unlink($upgradePhp);
-                } catch (\Exception $e) {
-
-                }
-                if ($status === true) {
+                    $upGrade->run();//启动任务
+                    if (file_exists($upgradePhp)) {
+                        unlink($upgradePhp);
+                    }
                     return $this->success('更新完毕');
-                } else {
-                    return $this->error($status);
+                } catch (\Exception $e) {
+                    return $this->error($e->getMessage());
                 }
             } else {
                 return $this->error($json['msg']);
@@ -216,6 +210,7 @@ class Index extends BaseController
                 }
                 return $this->installCardTask($json['data']);
             } catch (\Exception $e) {
+                return $this->error($e->getMessage());
             }
 
         }
@@ -294,7 +289,30 @@ class Index extends BaseController
             }
             return $this->error($state);
         }
-        return $this->error('新版本没有提供下载地址！');
+        abort(0, "新版本没有提供下载地址！");
     }
 
+    //打包扩展
+    function build(): \think\response\Json
+    {
+        $this->getAdmin();
+        is_demo_mode(true);
+        if (!extension_loaded('zip')) {
+            return $this->error("系统未安装或开启zip扩展，请安装后重试！");
+        }
+        if (!$this->auth) {
+            return $this->error("请获取授权后进行操作");
+        }
+        $ExtInfo = $this->request->post("extInfo", []);
+        $build = new \BrowserExtBuild($ExtInfo);
+        try {
+            $status = $build->runBuild();
+            if ($status) {
+                return $this->success('打包完毕', ['url' => '/browserExt.zip']);
+            }
+        } catch (\Exception $e) {
+            return $this->error($e->getMessage());
+        }
+        return $this->success('打包失败');
+    }
 }

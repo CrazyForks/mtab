@@ -28,18 +28,26 @@ class Setting extends BaseController
         (new \app\controller\admin\Index(app()))->authorization();
         return $this->success('保存成功');
     }
+
     function refreshCache(): \think\response\Json
     {
         $this->getAdmin();
         Cache::delete('webConfig');
         return $this->success('刷新成功');
     }
+
     function getSetting(): \think\response\Json
     {
         $admin = $this->getAdmin();
         $role = $this->request->post('role', []);
         $info = SettingModel::Config();
         $tmp = [];
+        $url = '';
+        if (in_array('ext_name', $role)) {
+            if (file_exists(public_path() . '/browserExt.zip')) {
+                $url = '/browserExt.zip';
+            }
+        }
         if ($info) {
             if (count($role) > 0) {
                 foreach ($info as $key => $val) {
@@ -48,8 +56,16 @@ class Setting extends BaseController
                     }
                 }
             }
-            return $this->success('ok', $tmp);
+            return json(['msg' => "ok", "data" => $tmp, 'success' => $this->auth, 'code' => 1, "url" => $url]);
         }
-        return $this->error('empty');
+        return json(['msg' => 'ok', 'data' => false, 'success' => $this->auth, 'code' => 0, 'url' => $url]);
+    }
+    function delExt(): \think\response\Json
+    {
+        $this->getAdmin();
+        if (file_exists(public_path() . '/browserExt.zip')) {
+            unlink(public_path() . '/browserExt.zip');
+        }
+        return $this->success("ok");
     }
 }

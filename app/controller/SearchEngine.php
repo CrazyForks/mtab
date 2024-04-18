@@ -3,7 +3,6 @@
 namespace app\controller;
 
 use app\BaseController;
-use app\model\LinkStoreModel;
 use app\model\SearchEngineModel;
 use app\model\UserSearchEngineModel;
 use think\facade\Cache;
@@ -91,7 +90,8 @@ class SearchEngine extends BaseController
         }
         return $this->error('保存失败');
     }
-    function sort(){
+    function sort(): \think\response\Json
+    {
         $sort = (array)$this->request->post();
         foreach ($sort as $key => $value) {
             SearchEngineModel::where("id", $value['id'])->update(['sort' => $value['sort']]);

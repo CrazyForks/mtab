@@ -28,7 +28,7 @@ class Upgrade2
     }
 
     //运行入口
-    function run()
+    function run(): bool
     {
         return $this->startUpgrade();
     }
@@ -44,12 +44,12 @@ class Upgrade2
             $this->delZip();
             //下载远程更新包
             if(!$this->fileDownload()){
-                return "资源下载失败";
+                abort(0, '资源下载失败');
             }
             //解压升级包
             if (!$this->unzip($this->archiveFile, $this->extractPath)) {
                 $this->delZip();
-                return '升级资源包解压失败';
+                abort(0, '升级资源包解压失败');
             }
             $this->deleteDirectory(public_path().'dist/');//删除旧的网站文件
             //拷贝覆盖

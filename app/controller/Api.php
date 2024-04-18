@@ -25,7 +25,8 @@ class Api extends BaseController
             'copyright' => $this->Setting("copyright", ''),
             "recordNumber" => $this->Setting("recordNumber", ''),
             "auth" => $this->auth,
-            "logo" => $this->Setting('logo', '')
+            "logo" => $this->Setting('logo', ''),
+            "qq_login" => $this->Setting('qq_login', '0')
         ]);
     }
 
@@ -87,11 +88,16 @@ class Api extends BaseController
                 ';
             }
             $html = View::display($k, ['time' => date('Y-m-d H:i:s'), 'code' => $code]);
-            $status = \Mail::send($mail, $html);
-            if ($status) {
-                Cache::set('code' . $mail, $code, 60);
-                return $this->success("发送成功");
+            try {
+                $status = \Mail::send($mail, $html);
+                if ($status) {
+                    Cache::set('code' . $mail, $code, 300);
+                    return $this->success('发送成功');
+                }
+            }catch (\Exception $e){
+                return $this->error($e->getMessage());
             }
+
         }
         return $this->error('发送失败');
     }

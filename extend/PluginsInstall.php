@@ -19,7 +19,7 @@ class PluginsInstall
         $this->extractPath = runtime_path();
         $this->root_path = root_path() . 'plugins/';
         if (!is_dir($this->root_path)) {//不存在插件目录则创建
-            mkdir($this->root_path,0777,true);
+            mkdir($this->root_path, 0777, true);
         }
         $this->download = $info['download'];
         $this->directory = $info['name_en'];
@@ -45,12 +45,12 @@ class PluginsInstall
             $this->delZip();
             //下载远程更新包
             if (!$this->fileDownload()) {
-                return '资源下载失败';
+                abort(0, "资源下载失败");
             }
             //解压升级包
             if (!$this->unzip($this->archiveFile, $this->extractPath)) {
                 $this->delZip();
-                return '升级资源包解压失败';
+                abort(0, '升级资源包解压失败');
             }
             //拷贝覆盖
             $this->copy();

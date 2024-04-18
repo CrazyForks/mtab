@@ -18,7 +18,6 @@ create table card
 )
     comment '卡片数据表';
 
-
 create table config
 (
     user_id int  null,
@@ -43,7 +42,7 @@ create table link
 (
     user_id     int      null,
     update_time datetime null comment '更新时间',
-    link        json     null
+    link        longtext null
 );
 
 create table link_folder
@@ -77,8 +76,6 @@ create table linkstore
     constraint linkStore_id_uindex
         unique (id)
 );
-
-
 
 create table note
 (
@@ -128,13 +125,14 @@ create table tabbar
 
 create table token
 (
-    id          bigint auto_increment
+    id           bigint auto_increment
         primary key,
-    user_id     int      null,
-    token       tinytext null,
-    create_time int      null,
-    ip          tinytext null,
-    user_agent  tinytext null,
+    user_id      int          null,
+    token        tinytext     null,
+    create_time  int          null,
+    ip           tinytext     null,
+    user_agent   tinytext     null,
+    access_token varchar(200) null comment 'qq的令牌',
     constraint token_id_uindex
         unique (id)
 );
@@ -143,6 +141,7 @@ create table user
 (
     id               int auto_increment
         primary key,
+    avatar           varchar(255)  null comment '头像',
     mail             varchar(50)   null,
     password         tinytext      null,
     create_time      datetime      null,
@@ -151,10 +150,10 @@ create table user
     manager          int default 0 null,
     login_fail_count int default 0 null,
     login_time       datetime      null comment '登录时间',
+    qq_open_id       varchar(200)  null comment 'qq开放平台Id',
+    nickname         varchar(200)  null comment '昵称',
     constraint user_id_uindex
-        unique (id),
-    constraint user_mail_uindex
-        unique (mail)
+        unique (id)
 );
 
 create table user_search_engine
@@ -180,6 +179,8 @@ create table wallpaper
     name        varchar(200)    null comment '标题',
     sort        int default 999 null
 );
+
+
 
 
 INSERT INTO linkstore (name, src, url, type, size, create_time, hot, tips, domain, app, install_num) VALUES ('Bilibili', '/static/bilibili.png', 'https://bilibili.com', 'icon', '1x1', '2022-11-07 21:51:42', 0, 'Bilibili弹幕视频网站Acg网站', 'bilibili.com,www.bilibili.com', 0, 0);
