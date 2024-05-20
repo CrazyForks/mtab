@@ -24,7 +24,6 @@ class Index extends BaseController
         View::assign("favicon", SettingModel::Config('logo', '/favicon.ico'));
         return View::fetch("dist/index.html");
     }
-
     function all()
     {
         $app = app();
@@ -43,16 +42,16 @@ class Index extends BaseController
         return $this->success("ok", $dt);
     }
 
-    function privacy()
+    function privacy(): string
     {
-        $content = $this->Setting("privacy", "");
-        return View::fetch('/privacy', ['content' => $content,'title'=>$this->Setting("title",''), 'logo' => $this->Setting('logo', '')]);
+        $content = $this->systemSetting("privacy", "");
+        return View::fetch('/privacy', ['content' => $content,'title'=>$this->systemSetting("title",''), 'logo' => $this->systemSetting('logo', '')]);
     }
 
     function favicon()
     {
         //从配置中获取logo
-        $favicon = $this->Setting('logo');
+        $favicon = $this->systemSetting('logo');
         $file = public_path() . $favicon;
         if (file_exists($file) && is_file($file)) {
             return download($file)->mimeType(\PluginStaticSystem::mimeType($file))->force(false)->expire(60 * 60 * 24);

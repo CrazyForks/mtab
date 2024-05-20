@@ -38,9 +38,12 @@ class Tabbar extends BaseController
                 return $this->success('ok', $data['tabs']);
             }
         }
-        $config = $this->Setting('defaultTab', '/static/defaultTab.json', true);
+        $config = $this->systemSetting('defaultTab', '/static/defaultTab.json', true);
         if ($config) {
             $fp = joinPath(public_path(), $config);
+            if (!file_exists($fp)) {
+                $fp = public_path() . 'static/defaultTab.json';
+            }
             if (file_exists($fp)) {
                 $file = file_get_contents($fp);
                 $json = json_decode($file, true);

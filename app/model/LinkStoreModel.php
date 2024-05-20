@@ -16,4 +16,9 @@ class LinkStoreModel extends Model
     protected $pk = "id";
     protected $jsonAssoc = true;
     protected $json = ['custom'];
+
+    function userInfo(): \think\model\relation\HasOne
+    {
+        return $this->hasOne(UserModel::class, 'id', 'user_id')->field('id,nickname');
+    }
 }

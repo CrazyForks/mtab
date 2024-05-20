@@ -3,7 +3,10 @@
 namespace app\controller;
 
 use app\BaseController;
+use app\command\repair;
+use app\command\util;
 use app\model\ConfigModel;
+use app\model\FileModel;
 use app\model\HistoryModel;
 use app\model\LinkModel;
 use app\model\LinkStoreModel;
@@ -16,7 +19,9 @@ use app\model\UserSearchEngineModel;
 use DateInterval;
 use DatePeriod;
 use DateTime;
+use mysqli;
 use think\facade\Cache;
+use think\facade\Db;
 
 class Admin extends BaseController
 {
@@ -27,7 +32,10 @@ class Admin extends BaseController
         $search = $this->request->post('search');
         $sql = [];
         if (isset($search['mail']) && mb_strlen($search['mail']) > 0) {
-            $sql['mail'] = $search['mail'];
+            $sql[] = ['mail', 'like', "%$search[mail]%"];
+        }
+        if (isset($search['nickname']) && mb_strlen($search['nickname']) > 0) {
+            $sql[] = ["nickname","like","%$search[nickname]%"];
         }
         $user = UserModel::where($sql)->withoutField('password')->order($this->request->post('sort.prop', 'id'), $this->request->post('sort.order', 'desc'))->paginate($limit);
         return $this->success('ok', $user);
@@ -126,13 +134,7 @@ class Admin extends BaseController
         $userNum = UserModel::count('id');
         $linkNum = LinkStoreModel::count('id');
         $redisNum = 0;
-        $fileNum = Cache::get('fileNum');
-        if (!$fileNum) {
-            if (is_dir(public_path() . 'images')) {
-                $fileNum = $this->countFilesInDirectory(public_path() . 'images');
-                Cache::set('fileNum', $fileNum, 300);
-            }
-        }
+        $fileNum = FileModel::field('id')->count("id");
         return $this->success('ok', ['userNum' => $userNum, 'linkNum' => $linkNum, 'redisNum' => $redisNum, 'fileNum' => $fileNum]);
     }
 
@@ -195,5 +197,13 @@ class Admin extends BaseController
             return $this->success('', $list);
         }
         return $this->success('', []);
+    }
+
+    function repair(): \think\response\Json
+    {
+        $this->getAdmin();
+        is_demo_mode(true);
+        repair::repair();
+        return $this->success("修复完毕");
     }
 }

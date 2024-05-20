@@ -19,8 +19,8 @@ RUN chmod +x /install.sh && chmod +x /start.sh && /bin/sh /install.sh && rm /ins
 
 EXPOSE 80
 
-CMD ["./start.sh"]
+CMD ["/bin/bash","/start.sh"]
 
 #构建全平台 docker buildx create --name mybuilder --driver docker-container --use
-#构建全平台 docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6,linux/amd64/v3,linux/386 -t itushan/mtab --push .
+#构建全平台 docker buildx build --no-cache --platform linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6,linux/amd64/v3 -t itushan/mtab --push .
 #构建本地镜像 docker build -t itushan/mtab .

@@ -4,6 +4,7 @@ namespace app\controller;
 
 use app\BaseController;
 use app\model\ConfigModel;
+use app\model\FileModel;
 use app\model\LinkFolderModel;
 use app\model\LinkStoreModel;
 use think\facade\Db;
@@ -20,7 +21,7 @@ class LinkStore extends BaseController
         if ($name) {
             $sql[] = ['name|tips', 'like', "%" . $name . "%"];
         }
-        $list = LinkStoreModel::where($sql);
+        $list = LinkStoreModel::where($sql)->where('status', 1)->order('hot', "desc")->withoutField('user_id');
         //area需要使用find_in_set来匹配
         if ($area && $area != 0) {
             $list = $list->whereRaw("find_in_set('$area',area)");
@@ -39,7 +40,7 @@ class LinkStore extends BaseController
         if ($name) {
             $sql[] = ['name|tips', 'like', '%' . $name . '%'];
         }
-        $list = LinkStoreModel::where($sql);
+        $list = LinkStoreModel::with(['userInfo'])->where($sql);
         //area需要使用find_in_set来匹配
         if ($area && $area != '全部') {
             $list = $list->whereRaw("find_in_set('$area',area)");
@@ -58,16 +59,106 @@ class LinkStore extends BaseController
         is_demo_mode(true);
         $admin = $this->getAdmin();
         $data = $this->request->post("form");
-        $info = LinkStoreModel::where("id", $data['id'])->update($data);
+        try {
+            unset($data['userInfo']);
+        } catch (\Exception $exception) {
+
+        }
+        $info = LinkStoreModel::where("id", $data['id'])->withoutField(['userInfo'])->update($data);
         return $this->success('修改成功', $info);
+    }
+
+    function addPublic(): \think\response\Json
+    {
+        $user = $this->getAdmin();
+        $info = $this->request->post();
+        $info['create_time'] = date("Y-m-d H:i:s");
+        $info['domain'] = $this->getDomain($info['url']);
+        $info['src'] = $this->downloadLogo($info['src']);
+        FileModel::addFile($info['src'],$user['id']);
+        if (isset($info['id'])) {
+            unset($info['id']);
+        }
+        (new \app\model\LinkStoreModel)->allowField(["name", "src", "url", "domain", "create_time", "tips", "app"])->insert($info);
+        return $this->success('添加成功', $info);
+    }
+
+    private function downloadLogo($src): string
+    {
+        $f = file_get_contents($src);
+        $pathinfo = pathinfo($src);
+        try {
+            mkdir(public_path() . 'images/' . date("Y/m/d"), 0755, true);
+        } catch (\Throwable $th) {
+            //throw $th;
+        }
+        $filePath = '/images/' . date("Y/m/d") . '/' . md5($src) . '.' . $pathinfo['extension'];
+        file_put_contents(joinPath(public_path(), $filePath), $f);
+        return $filePath;
+    }
+
+    function push(): \think\response\Json
+    {
+        $user = $this->getUser(true);
+        $data = $this->request->post();
+        $info = [];
+        if ($data) {
+            if (isset($data['name'])) {
+                $info['name'] = $data['name'];
+            }
+            if (isset($data['src'])) {
+                $info['src'] = $data['src'];
+            }
+            if (isset($data['url']) && mb_strlen($data['url']) > 2) {
+                $info['url'] = $data['url'];
+            } else {
+                return $this->error('推送失败');
+            }
+            if (isset($data['bgColor'])) {
+                $info['bgColor'] = $data['bgColor'];
+            }
+            if (isset($data['app'])) {
+                $info['app'] = $data['app'];
+            }
+            if (isset($data['tips'])) {
+                $info['tips'] = $data['tips'];
+            }
+            $info['domain'] = $this->getDomain($info['url']);
+            $info['user_id'] = $user['user_id'];
+            $info['status'] = 0;
+            $info['create_time'] = date('Y-m-d H:i:s');
+            if (!LinkStoreModel::where("url", $info['url'])->find()) {
+                LinkStoreModel::create($info);
+                return $this->success('推送完毕');
+            }
+        }
+        return $this->error('推送失败');
+    }
+
+    private function getDomain($url)
+    {
+        $domain = $url;
+        $p = parse_url($domain);
+        if (isset($p['host'])) {
+            return $p['host'];
+        }
+        if (isset($p['path'])) {
+            return $p['path'];
+        }
+        return '';
     }
 
     public function add(): \think\response\Json
     {
         $admin = $this->getAdmin();
         is_demo_mode(true);
-        $data = $this->request->post('form');
+        $data = $this->request->post('form', []);
         if ($data) {
+            try {
+                unset($data['userInfo']);
+            } catch (\Exception $exception) {
+
+            }
             if (isset($data['id']) && $data['id']) { //更新
                 return $this->update();
             } else {
@@ -166,5 +257,26 @@ class LinkStore extends BaseController
         $ids = $this->request->post('ids', []);
         LinkStoreModel::where("id", 'in', $ids)->delete();
         return $this->success('删除成功');
+    }
+
+    function domains(): \think\response\Json
+    {
+        $domains = $this->request->post('domains', []);
+        $tmp = [];
+        foreach (LinkStoreModel::where('status', 1)->cursor() as $value) {
+            $d = $this->getDomain($value['url']);
+            if (in_array($d, $domains)) {
+                $tmp[$d] = ["domain" => $d, "name" => $value['name'], "src" => $value['src'], "bgColor" => $value['bgColor'],'tips'=>$value['tips']];
+            } else if ($value['domain']) {
+                $r = explode(",", $value['domain']);
+                foreach ($r as $v) {
+                    if (in_array($v, $domains)) {
+                        $tmp[$v] = ['domain' => $v, 'name' => $value['name'], 'src' => $value['src'], 'bgColor' => $value['bgColor'],'tips'=>$value['tips']];
+                        break;
+                    }
+                }
+            }
+        }
+        return $this->success('ok', $tmp);
     }
 }

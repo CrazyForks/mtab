@@ -35,9 +35,13 @@ class LinkModel extends Model
     {
         foreach ($value as $k => &$v) {
             if (isset($v['app']) && $v['app'] == 1) {
-                if (isset($v['origin_id']) && $v['origin_id'] > 0) {
+                if (isset($v['origin_id']) && $v['origin_id'] > 0 && $v['type'] === 'icon') {
                     if (isset($this->WebApp[(int)$v['origin_id']])) {
                         $v['custom'] = $this->WebApp[(int)$v['origin_id']]['custom'];
+                        $v['url'] = $this->WebApp[(int)$v['origin_id']]['url'];
+                        $v['src'] = $this->WebApp[(int)$v['origin_id']]['src'];
+                        $v['name'] = $this->WebApp[(int)$v['origin_id']]['name'];
+                        $v['bgColor'] = $this->WebApp[(int)$v['origin_id']]['bgColor'];
                     }
                 }
             }

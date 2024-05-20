@@ -5,5 +5,8 @@
 return [
     // 指令定义
     'commands' => [
+        'repair' => 'app\command\repair',
+        'repass' => 'app\command\repass',
+        'test' => 'app\command\test',
     ],
 ];

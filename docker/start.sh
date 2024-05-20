@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 php-fpm7
 
@@ -27,6 +27,11 @@ if [ ! -e "$lock_file" ]; then
     rm -rf "$source_dir";
 fi
 
+if [ -e "/app/public/installed.lock" ]; then
+    # 如果锁文件存在，执行以下更新数据库操作
+    echo "检查数据库更新...";
+    php "$destination_dir/think" repair
+fi
 
 echo "php-fpm7,redis and nginx started";
 

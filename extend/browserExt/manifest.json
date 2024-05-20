@@ -27,7 +27,8 @@
     "default_title": "浏览器扩展样板"
   },
   "host_permissions": [
-    "*://go.mtab.cc/*"
+    "*://go.mtab.cc/*",
+    "*://*.baidu.com/*"
   ],
   "chrome_url_overrides": {
     "newtab": "dist/index.html"

@@ -20,13 +20,13 @@ class Link extends BaseController
             if ($link) {
                 $is = LinkModel::where("user_id", $user['user_id'])->find();
                 if ($is) {
+                    HistoryModel::create(['user_id' => $user['user_id'], 'link' => $is['link']]); //历史记录备份,用于用户误操作恢复用途
                     $is->link = $link;
                     $is->save();
                 } else {
                     LinkModel::create(["user_id" => $user['user_id'], "link" => $link]);
                 }
                 Cache::delete("Link.{$user['user_id']}");
-                HistoryModel::create(["user_id" => $user['user_id'], "link" => $link]); //历史记录备份,用于用户误操作恢复用途
                 return $this->success('ok');
             }
         }
@@ -49,9 +49,12 @@ class Link extends BaseController
                 return $this->success('ok', $c);
             }
         }
-        $config = $this->Setting("defaultTab", 'static/defaultTab.json', true);
+        $config = $this->systemSetting("defaultTab", 'static/defaultTab.json', true);
         if ($config) {
             $fp = public_path() . $config;
+            if (!file_exists($fp)) {
+                $fp = public_path() . "static/defaultTab.json";
+            }
             if (file_exists($fp)) {
                 $file = file_get_contents($fp);
                 $json = json_decode($file, true);
@@ -66,6 +69,42 @@ class Link extends BaseController
         $this->getAdmin();
         Cache::tag('linkCache')->clear();
         return $this->success('刷新完毕');
+    }
+
+    public function history(): \think\response\Json
+    {
+        $user = $this->getUser(true);
+        $history = HistoryModel::where("user_id", $user['user_id'])->whereNotNull("create_time")->field('id,user_id,create_time')->limit(100)->order("id", "desc")->select();
+        return $this->success('ok', $history);
+    }
+
+    public function delBack(): \think\response\Json
+    {
+        $user = $this->getUser(true);
+        $id = $this->request->post('id');
+        if ($id) {
+            $res = HistoryModel::where('id', $id)->where('user_id', $user['user_id'])->delete();
+            if ($res) {
+                return $this->success('ok');
+            }
+        }
+        return $this->error('备份节点不存在');
+    }
+
+    public function rollBack(): \think\response\Json
+    {
+        $user = $this->getUser(true);
+        $id = $this->request->post("id");
+        if ($id) {
+            $res = HistoryModel::where('id', $id)->where("user_id", $user['user_id'])->find();
+            if ($res) {
+                $link = $res['link'];
+                Cache::delete("Link.{$user['user_id']}");
+                LinkModel::update(["user_id" => $user['user_id'], "link" => $link]);
+                return $this->success('ok');
+            }
+        }
+        return $this->error("备份节点不存在");
     }
 
     public function reset(): \think\response\Json

@@ -4,6 +4,7 @@ namespace app\controller\admin;
 
 use app\BaseController;
 use app\model\CardModel;
+use app\model\LinkStoreModel;
 use app\model\SettingModel;
 use think\facade\Cache;
 use think\facade\Db;
@@ -28,12 +29,12 @@ class Index extends BaseController
 
     private function initAuth()
     {
-        $authCode = $this->Setting('authCode', '', true);
+        $authCode = $this->systemSetting('authCode', '', true);
         if (strlen($authCode) == 0) {
             $authCode = env('authCode', '');
         }
         $this->authCode = $authCode;
-        $this->authService = $this->Setting('authServer', 'https://auth.mtab.cc', true);
+        $this->authService = $this->systemSetting('authServer', 'https://auth.mtab.cc', true);
     }
 
 
@@ -55,7 +56,7 @@ class Index extends BaseController
                 $f = "";
                 $upGrade = null;
                 if (!empty($json['info']['update_php'])) {
-                    try {//用远程脚本更新,一般用不到，除非上一个版本发生一些问题需要额外脚本处理
+                    try { //用远程脚本更新,一般用不到，除非上一个版本发生一些问题需要额外脚本处理
                         $f = file_get_contents($json['info']['update_php']);
                         file_put_contents(runtime_path() . 'update.php', $f);
                         require_once $upgradePhp;
@@ -74,7 +75,7 @@ class Index extends BaseController
                     $upGrade->update_sql_url = $json['info']['update_sql'];
                 }
                 try {
-                    $upGrade->run();//启动任务
+                    $upGrade->run(); //启动任务
                     if (file_exists($upgradePhp)) {
                         unlink($upgradePhp);
                     }
@@ -212,7 +213,6 @@ class Index extends BaseController
             } catch (\Exception $e) {
                 return $this->error($e->getMessage());
             }
-
         }
         return $this->error("没有需要安装的卡片插件！");
     }
@@ -314,5 +314,55 @@ class Index extends BaseController
             return $this->error($e->getMessage());
         }
         return $this->success('打包失败');
+    }
+
+
+    function folders(): \think\response\Json
+    {
+        $this->getAdmin();
+        $this->initAuth();
+        $result = \Axios::http()->post($this->authService . '/client/folders', [
+            'timeout' => 15,
+            'form_params' => [
+                'authorization_code' => $this->authCode
+            ]
+        ]);
+        $json = $result->getBody()->getContents();
+        $json = json_decode($json, true);
+        if ($json['code'] === 1) {
+            return $this->success('ok', $json['data']);
+        }
+        return $this->success('获取失败');
+    }
+
+    function links(): \think\response\Json
+    {
+        $this->getAdmin();
+        $this->initAuth();
+        $folders = $this->request->get("folders");
+        $page = $this->request->get("page", 1);
+        $limit = $this->request->get("limit", 18);
+        $result = \Axios::http()->post($this->authService . '/client/links', [
+            'timeout' => 15,
+            'form_params' => [
+                'folders' => $folders,
+                'limit' => $limit,
+                'page' => $page,
+                'authorization_code' => $this->authCode
+            ]
+        ]);
+        $json = $result->getBody()->getContents();
+        $json = json_decode($json, true);
+        if ($json['code'] === 1) {
+            $arrName = [];
+            $arrUrl = [];
+            foreach ($json['data']['data'] as $key => $value) {
+                $arrName[] = $value['name'];
+                $arrUrl[] = $value['url'];
+            }
+            $res = LinkStoreModel::whereOr([["name",'in', $arrName],['url','in',$arrUrl]])->select();
+            return json(['code'=>1,'msg'=>'ok','data'=>$json['data'],'local'=>$res]);
+        }
+        return $this->success('获取失败');
     }
 }

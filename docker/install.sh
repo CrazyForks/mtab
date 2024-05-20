@@ -4,15 +4,20 @@ apk add php7 php7-pdo_mysql php7-xml php7-xmlrpc php7-openssl php7-posix php7-pc
 
 apk add php7-simplexml
 
+apk add php7-bcmath
+
 apk add php7-opcache
 
 apk add nginx
+
+apk add bash
 
 apk add redis
 
 apk add rsync
 
 apk add --no-cache tzdata
+
 cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
 #创建nginx启动需要的目录

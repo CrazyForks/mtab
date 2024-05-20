@@ -17,6 +17,8 @@ use think\App;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
+use think\Exception;
+use think\facade\Config;
 use think\Model;
 
 /**
@@ -53,7 +55,6 @@ class BaseController
      * @access public
      * @param App $app 应用对象
      */
-    protected $user_temp = false;
     private $SettingConfig = false;
     public $auth = false;
 
@@ -69,13 +70,20 @@ class BaseController
     // 初始化
     protected function initialize()
     {
-        if ($this->Setting('authCode', env('authCode', false), true)) {
+        if ($this->systemSetting('authCode', env('authCode', false), true)) {
             $this->auth = true;
+        }
+        if ($this->systemSetting("app_debug", '0') === '1') {
+            $this->app->debug(true);
+            Config::set([
+                'show_error_msg' => true,
+                'exception_tmpl' => app()->getThinkPath() . 'tpl/think_exception.tpl'
+            ], 'app');
         }
     }
 
     //系统设置项
-    public function Setting($key = false, $def = false, $emptyReplace = false)
+    protected function systemSetting($key = false, $def = false, $emptyReplace = false)
     {
         if ($this->SettingConfig === false) {
             $this->SettingConfig = SettingModel::Config();
@@ -100,41 +108,13 @@ class BaseController
      * @throws DbException
      * @throws ModelNotFoundException
      */
-    public function getUser(bool $must = false)
+    protected function getUser(bool $must = false)
     {
-        $id = $this->request->header("Userid",'');
-        $token = $this->request->header("Token",'');
-        if (!$id) {
-            $id = $this->request->cookie('user_id', '');
-        }
-        if (!$token) {
-            $token = $this->request->cookie('token', '');
-        }
-        if ($id && $token) {
-            if ($this->user_temp) return $this->user_temp;
-            $user = TokenModel::where("user_id", $id)->where('token', $token)->field("user_id,token,create_time")->find();
-            if ($user) {
-                if (time() > ($user['create_time'] + 60 * 60 * 24 * 15)) {//如果创建时间大于15天则删除
-                    $user->delete();
-                } else {
-                    if ((time() - $user['create_time']) > (864000)) { //token定时15天清理一次，10-15天内如果使用了则重新计算时间
-                        $user->create_time = time();
-                        $user->save();
-                    }
-                    $this->user_temp = $user;
-                    return $user;
-                }
-            }
-        }
-        if ($must) {
-            $this->error("请登录后操作")->send();
-            exit();
-        }
-        return false;
+        return UserModel::getUser($must);
     }
 
     //admin认证
-    public function getAdmin()
+    protected function getAdmin()
     {
         $user = $this->getUser(true);
         $info = UserModel::where('id', $user['user_id'])->where("manager", 1)->find();
@@ -145,7 +125,7 @@ class BaseController
         exit();
     }
 
-    public function success($msg, $data = []): \think\response\Json
+    protected function success($msg, $data = []): \think\response\Json
     {
         if (is_array($msg)) {
             return json(['msg' => "", "code" => 1, "data" => $msg]);
@@ -153,7 +133,7 @@ class BaseController
         return json(['msg' => $msg, "code" => 1, "data" => $data]);
     }
 
-    public function error($msg, $data = []): \think\response\Json
+    protected function error($msg, $data = []): \think\response\Json
     {
         if (is_array($msg)) {
             return json(['msg' => "", "code" => 0, "data" => $msg]);

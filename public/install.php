@@ -88,7 +88,17 @@ if ($db_username && $php_version && $fileinfo_ext && $curl_ext && $zip_ext) {
                 $error = '数据表创建失败';
             }
             $conn = new mysqli($db_host, $db_username, $db_password, $table_name, $db_port);
+            //数据库的格式内容数据
             $sql_file_content = file_get_contents('../install.sql');
+            // 解析SQL文件内容并执行
+            $sql_statements = explode(';', trim($sql_file_content));
+            foreach ($sql_statements as $sql_statement) {
+                if (!empty($sql_statement)) {
+                    $conn->query($sql_statement);
+                }
+            }
+            //默认的一些基础数据
+            $sql_file_content = file_get_contents('../defaultData.sql');
             // 解析SQL文件内容并执行
             $sql_statements = explode(';', trim($sql_file_content));
             foreach ($sql_statements as $sql_statement) {
@@ -407,7 +417,7 @@ EOF;
             <a class='btn' href='/'>进入首页</a>
         </div>
         <p>后台进入方式，需要用管理员账户登录客户端<br/></p>
-        <p> <b>鼠标在桌面右击打开菜单->点击设置->个人中心->登录管理员的账号</b><br/>
+        <p><b>鼠标在桌面右击打开菜单->点击设置->个人中心->登录管理员的账号</b><br/>
             <b>
                 ->再次进入个人中心即可看到->管理后台->进入即可</b></p>
         <p>这是一个多用户的书签导航程序，用户之间数据是隔离的不受干扰</p>

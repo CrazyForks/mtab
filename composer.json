@@ -37,7 +37,9 @@
     "ext-zip": "*",
     "ext-posix": "*",
     "ext-dom": "*",
-    "ext-mbstring": "*"
+    "ext-mbstring": "*",
+    "ext-bcmath": "*",
+    "ext-gd": "*"
   },
   "require-dev": {
     "symfony/var-dumper": "^4.2",

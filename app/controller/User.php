@@ -22,7 +22,7 @@ class User extends BaseController
         $pass = $this->request->post('password', '0');
         $user = trim($user);
         $pass = trim($pass);
-        $info = UserModel::where('mail', $user)->field('id,mail,password,login_fail_count,login_ip,login_time')->find();
+        $info = UserModel::where('mail', $user)->find();
 
         if (Cache::get('login.' . $user)) {
             return $this->error('账号已被安全锁定,您可以修改密码然后登录');
@@ -41,6 +41,9 @@ class User extends BaseController
             $info->save();
             return $this->error('账号不存在或密码错误');
         }
+        if ($info['status'] === 1) {
+            return $this->error('账号已被冻结');
+        }
         $auth = $this->refreshToken($info);
         $info->login_ip = getRealIp();
         $info->login_time = date('Y-m-d H:i:s');
@@ -48,6 +51,7 @@ class User extends BaseController
         $info->save();
         return $this->success('登录成功', $auth);
     }
+
 
     private function refreshToken($info): array
     {
@@ -180,6 +184,20 @@ class User extends BaseController
         return $this->error('获取失败');
     }
 
+    public function unbindQQ(): \think\response\Json
+    {
+        $info = $this->getUser(true);
+        if ($info) {
+            $info = UserModel::field('id,mail,manager,nickname,avatar,qq_open_id')->find($info['user_id']);
+            if (empty($info->mail)) {
+                return $this->error("请先绑定邮箱后再解绑");
+            }
+            $info->qq_open_id = "";
+            $info->save();
+        }
+        return $this->success('解绑成功', $info);
+    }
+
     public function updateInfo(): \think\response\Json
     {
         $info = $this->getUser(true);
@@ -265,10 +283,10 @@ class User extends BaseController
                     //如果openid数据库不存在说明QQ没有被绑定过，可以绑定
                     $this->BindQQ($openid);//绑定后需要替换Token，不然之前的QQ登录会失效
                 }
-                $info = UserModel::where('qq_open_id', $openid)->field('id,mail,qq_open_id,password,login_fail_count,login_ip,login_time')->find();
+                $info = UserModel::where('qq_open_id', $openid)->find();
                 if (!$info) {//不存在就创建一个新用户,如果上一个步骤绑定成功的话，是不可能进入此步骤的
                     UserModel::insert(['mail' => '', 'password' => md5(time()), 'create_time' => date('Y-m-d H:i:s'), 'register_ip' => getRealIp(), 'qq_open_id' => $openid]);
-                    $info = UserModel::where('qq_open_id', $openid)->field('id,mail,qq_open_id,password,login_fail_count,login_ip,login_time')->find();
+                    $info = UserModel::where('qq_open_id', $openid)->find();
                     $this->getUserOpenInfo($access_token, $openid);//获取一些用户的默认信息
                 }
                 if ($info) {//如果用户存在
@@ -278,6 +296,9 @@ class User extends BaseController
                     $info->save();
                     $info['access_token'] = $access_token;
                     $auth = $this->refreshToken($info);
+                    if ($info['status'] === 1) {
+                        return View::fetch('/qq_login_error');
+                    }
                     return View::fetch('/qq_login', ['info' => $auth]);
                 }
             }

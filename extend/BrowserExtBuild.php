@@ -27,7 +27,9 @@ class BrowserExtBuild
         ),
         'permissions' => array(
             'background',
-            'cookies'
+            'cookies',
+            'bookmarks',
+            'favicon'
         ),
         'action' => array(
             'default_icon' => 'icon/64.png',
@@ -102,7 +104,7 @@ class BrowserExtBuild
         $this->manifest['description'] = $this->info['ext_description'];
         $this->manifest['action']['default_title'] = $this->info['ext_name'];
         $this->manifest['externally_connectable']['matches'] = ["*://{$host}/*"];
-        $this->manifest['host_permissions'] = ["*://{$host}/*"];
+        $this->manifest['host_permissions'] = ["*://{$host}/*", '*://*.baidu.com/*'];
         file_put_contents(joinPath($this->buildDir, "manifest.json"), json_encode($this->manifest, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
     }
 

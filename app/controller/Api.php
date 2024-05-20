@@ -3,7 +3,7 @@
 namespace app\controller;
 
 use app\BaseController;
-use app\model\ConfigModel;
+use app\model\FileModel;
 use app\model\LinkModel;
 use app\model\SettingModel;
 use GuzzleHttp\Client;
@@ -19,14 +19,23 @@ class Api extends BaseController
     public function site(): \think\response\Json
     {
         return $this->success("ok", [
-            'email' => $this->Setting('email', ''),
-            'qqGroup' => $this->Setting("qqGroup", ''),
-            'beianMps' => $this->Setting("beianMps", ''),
-            'copyright' => $this->Setting("copyright", ''),
-            "recordNumber" => $this->Setting("recordNumber", ''),
+            'email' => $this->systemSetting('email', ''),
+            'qqGroup' => $this->systemSetting("qqGroup", ''),
+            'beianMps' => $this->systemSetting("beianMps", ''),
+            'copyright' => $this->systemSetting("copyright", ''),
+            "recordNumber" => $this->systemSetting("recordNumber", ''),
+            "mobileRecordNumber" => $this->systemSetting('mobileRecordNumber', '0'),
             "auth" => $this->auth,
-            "logo" => $this->Setting('logo', ''),
-            "qq_login" => $this->Setting('qq_login', '0')
+            "logo" => $this->systemSetting('logo', ''),
+            "qq_login" => $this->systemSetting('qq_login', '0'),
+            "loginCloseRecordNumber" => $this->systemSetting('loginCloseRecordNumber', '0'),
+            "is_push_link_store" => $this->auth ? $this->systemSetting('is_push_link_store', '0') : '0',
+            "is_push_link_store_tips" => $this->systemSetting('is_push_link_store_tips', '0'),
+            "is_push_link_status" => $this->systemSetting("is_push_link_status", '0'),
+            'google_ext_link' => $this->systemSetting("google_ext_link", ''),
+            'edge_ext_link' => $this->systemSetting("edge_ext_link", ''),
+            'local_ext_link' => $this->systemSetting("local_ext_link", ''),
+            "customAbout" => $this->systemSetting("customAbout", '')
         ]);
     }
 
@@ -36,9 +45,9 @@ class Api extends BaseController
     }
 
     //获取默认壁纸
-    function DefBg()
+    function DefBg(): \think\response\Json
     {
-        $config = $this->Setting('defaultTab', 'static/defaultTab.json', true);
+        $config = $this->systemSetting('defaultTab', 'static/defaultTab.json', true);
         if ($config) {
             $fp = public_path() . $config;
             if (file_exists($fp)) {
@@ -54,7 +63,7 @@ class Api extends BaseController
         return $this->success("ok", ['background' => "static/background.jpeg", "mime" => 0]);
     }
 
-    function globalNotify()
+    function globalNotify(): \think\response\Json
     {
         $info = SettingModel::Config("globalNotify", false);
         if ($info) {
@@ -94,7 +103,7 @@ class Api extends BaseController
                     Cache::set('code' . $mail, $code, 300);
                     return $this->success('发送成功');
                 }
-            }catch (\Exception $e){
+            } catch (\Exception $e) {
                 return $this->error($e->getMessage());
             }
 
@@ -158,13 +167,13 @@ class Api extends BaseController
     {
         $avatar = $this->request->post('avatar');
         if ($avatar) {
-            $remote_avatar = $this->Setting("remote_avatar", "https://avatar.mtab.cc/6.x/bottts/png?seed=", true);
+            $remote_avatar = $this->systemSetting("remote_avatar", "https://avatar.mtab.cc/6.x/bottts/png?seed=", true);
             $str = $this->downloadFile($remote_avatar . $avatar, md5($avatar) . '.png');
             return $this->success(['src' => $str]);
         }
         $url = $this->request->post('url', false);
         $icon = "";
-        $cdn = $this->Setting('assets_host', '');
+        $cdn = $this->systemSetting('assets_host', '');
         if ($url) {
             $realUrl = $this->addHttpProtocolRemovePath($url);
             $client = \Axios::http();
@@ -255,6 +264,7 @@ class Api extends BaseController
 
     private function downloadFile($url, $name)
     {
+        $user = $this->getUser();
         $client = \Axios::http();
         $path = '/images/' . date('Y/m/d/');
         $remotePath = public_path() . $path;
@@ -269,6 +279,7 @@ class Api extends BaseController
                     'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
                 ]
             ]);
+            FileModel::addFile($path . $name, $user['user_id'] ?? null);
             return $path . $name;
         } catch (RequestException $e) {
         }
@@ -279,7 +290,7 @@ class Api extends BaseController
     {
         $send = $this->request->get('seed');
         $client = new Client();
-        $remote_avatar = $this->Setting('remote_avatar', 'https://avatar.mtab.cc/6.x/bottts/png?seed=', true);
+        $remote_avatar = $this->systemSetting('remote_avatar', 'https://avatar.mtab.cc/6.x/bottts/png?seed=', true);
         $response = $client->get($remote_avatar . urlencode($send), [
             'stream' => true,
             'timeout' => 10,
@@ -291,17 +302,20 @@ class Api extends BaseController
     {
         $user = $this->getUser();
         if (!$user) {
-            if ($this->Setting('touristUpload') !== '1') {
+            if ($this->systemSetting('touristUpload') !== '1') {
                 //如果没有开启游客上传
                 return $this->error('管理员已关闭游客上传！请登录后使用');
             }
         }
+        $type = $this->request->header("Up-Type", '');
         $file = $this->request->file('file');
         if (empty($file)) {
             return $this->error('not File');
         }
-        if ($file->getSize() > 1024 * 1024 * 2) {
-            return $this->error('文件最大2MB,请压缩后再试');
+        $maxSize = (double)$this->systemSetting('upload_size', '2');
+        if ($file->getSize() > 1024 * 1024 * $maxSize) {
+            $limit = $maxSize < 1 ? ($maxSize * 1000) . 'KB' : ($maxSize) . 'MB';
+            return $this->error("文件最大$limit,请压缩后再试");
         }
         if (in_array(strtolower($file->getOriginalExtension()), ['png', 'jpg', 'jpeg', 'webp', 'ico', 'svg'])) {
             // 验证文件并保存
@@ -311,9 +325,23 @@ class Api extends BaseController
                 $hash = Str::random(32);
                 $fileName = $hash . '.' . $file->getOriginalExtension();
                 $filePath = Filesystem::disk('images')->putFileAs($savePath, $file, $fileName);
-                $cdn = $this->Setting('assets_host', '/', true);
-                return $this->success(['url' => $cdn . $filePath]);
+                $minPath = '';
+                if ($type == 'icon' || $type == 'avatar') {
+                    $fp = joinPath(public_path(), $filePath);
+                    $image = new \ImageBack($fp);
+                    $image->resize(120, 0)->save($fp);
+                } else if ($type == 'AdminBackground') {
+                    $minPath = joinPath($savePath, "/min_$fileName");
+                    $fp = joinPath(public_path(), $filePath);
+                    $image = new \ImageBack($fp);
+                    $image->resize(400, 0)->save(joinPath(public_path(), $minPath));
+                    FileModel::addFile($minPath, $user['user_id'] ?? null);
+                }
+                $cdn = $this->systemSetting('assets_host', '/', true);
+                FileModel::addFile($filePath, $user['user_id'] ?? null);
+                return $this->success(['url' => $cdn . $filePath, "minUrl" => joinPath($cdn, $minPath)]);
             } catch (\think\exception\ValidateException $e) {
+                return $this->error($e->getMessage());
                 // 验证失败，给出错误提示
                 // ...
             }
@@ -323,7 +351,7 @@ class Api extends BaseController
 
     function AdminUpload(): \think\response\Json
     {
-        $this->getAdmin();
+        $user = $this->getAdmin();
         $file = $this->request->file('file');
         if (empty($file)) {
             return $this->error('not File');
@@ -338,7 +366,8 @@ class Api extends BaseController
             $hash = Str::random(32);
             $fileName = $hash . '.' . $file->getOriginalExtension();
             $filePath = Filesystem::disk('images')->putFileAs($savePath, $file, $fileName);
-            $cdn = $this->Setting('assets_host', '/', true);
+            $cdn = $this->systemSetting('assets_host', '/', true);
+            FileModel::addFile($filePath, $user['user_id'] ?? null);
             return $this->success(['url' => $cdn . $filePath]);
         } catch (\think\exception\ValidateException $e) {
             // 验证失败，给出错误提示

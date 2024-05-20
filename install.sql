@@ -1,212 +1,434 @@
-create table card
-(
-    id          int auto_increment
-        primary key,
-    name        varchar(200)  null,
-    name_en     varchar(200)  null,
-    status      int default 0 null,
-    version     int default 0 null,
-    tips        varchar(255)  null comment '说明',
-    create_time datetime      null comment '添加时间',
-    src         text          null comment 'logo',
-    url         varchar(255)  null comment '卡片地址',
-    `window`    varchar(255)  null comment '窗口地址',
-    update_time datetime      null,
-    install_num int default 0 null,
-    setting     varchar(200)  null comment '设置页面的url',
-    dict_option longtext      null comment '配置的参数'
-)
-    comment '卡片数据表';
+# 创建Card数据表
 
-create table config
+create table if not exists card
 (
-    user_id int  null,
-    config  json null
-);
+    id int auto_increment
+        primary key
+) comment '卡片数据表';
+
+
+alter table card
+    add name varchar(200) null;
+
+alter table card
+    add name_en varchar(200) null;
+
+alter table card
+    add status int default 0 null;
+
+alter table card
+    add version int default 0 null;
+
+alter table card
+    add tips varchar(255) null comment '说明';
+
+alter table card
+    add create_time datetime null comment '添加时间';
+
+alter table card
+    add src text null comment 'logo';
+
+alter table card
+    add url varchar(255) null comment '卡片地址';
+
+alter table card
+    add `window` varchar(255) null comment '窗口地址';
+
+alter table card
+    add update_time datetime null;
+
+alter table card
+    add install_num int default 0 null;
+
+alter table card
+    add setting varchar(200) null comment '设置页面的url';
+
+alter table card
+    add dict_option longtext null comment '配置的参数';
+
+
+#创建config数据表
+
+create table if not exists config
+(
+    user_id int null
+) comment '用户配置数据表';
 
 create index config_user_id_index
     on config (user_id);
 
-create table history
+alter table config
+    add config longtext null;
+
+# 创建file数据表
+
+create table if not exists file
 (
-    id      bigint auto_increment
+    id bigint auto_increment
+        primary key
+)
+    comment '文件';
+
+alter table file
+    add path varchar(255) null;
+
+alter table file
+    add user_id int null;
+
+alter table file
+    add create_time datetime null;
+
+alter table file
+    add size double default 0 null comment '尺寸';
+
+alter table file
+    add mime_type varchar(100) null comment '文件类型';
+
+
+#创建history数据表
+
+create table if not exists history
+(
+    id bigint auto_increment
         primary key,
-    user_id int  null,
-    link    json null,
+
     constraint history_id_uindex
         unique (id)
 )
     comment 'link历史数据';
 
-create table link
+alter table history
+    add user_id int null;
+
+alter table history
+    add link longtext null;
+
+alter table history
+    add create_time datetime null comment '创建时间';
+
+
+#创建link数据表
+
+create table if not exists link
 (
-    user_id     int      null,
-    update_time datetime null comment '更新时间',
-    link        longtext null
+    user_id int null
 );
 
-create table link_folder
+create index link_user_id_index
+    on link (user_id);
+
+
+alter table link
+    add update_time datetime null comment '更新时间';
+
+alter table link
+    add link longtext null;
+
+
+#创建link_folder数据表
+
+create table if not exists link_folder
 (
-    id   int auto_increment comment 'id'
-        primary key,
-    name varchar(50)   null comment '分类名称',
-    sort int default 0 null
+    id int auto_increment comment 'id'
+        primary key
 )
     comment '标签链接分类';
 
-create table linkstore
+alter table link_folder
+    add name varchar(50) null comment '分类名称';
+
+alter table link_folder
+    add sort int default 0 null;
+
+
+#创建link_store数据表
+
+create table if not exists linkstore
 (
-    id          int auto_increment
+    id int auto_increment
         primary key,
-    name        varchar(255)               null,
-    src         varchar(255)               null,
-    url         varchar(255)               null,
-    type        varchar(20) default 'icon' null,
-    size        varchar(20) default '1x1'  null,
-    create_time datetime                   null,
-    hot         bigint      default 0      null,
-    area        varchar(20) default ''     null comment '专区',
-    tips        varchar(255)               null comment '介绍',
-    domain      varchar(255)               null,
-    app         int         default 0      null comment '是否app',
-    install_num int         default 0      null comment '安装量',
-    bgColor     varchar(30)                null comment '背景颜色',
-    vip         int         default 0      null comment '是否会员可见 0所有人 1=会员',
-    custom      text                       null comment '自定义配置',
     constraint linkStore_id_uindex
         unique (id)
 );
 
-create table note
+alter table linkstore
+    add name varchar(255) null;
+
+alter table linkstore
+    add src varchar(255) null;
+
+alter table linkstore
+    add url varchar(255) null;
+
+alter table linkstore
+    add type varchar(20) default 'icon' null;
+
+alter table linkstore
+    add size varchar(20) default '1x1' null;
+
+alter table linkstore
+    add create_time datetime null;
+
+alter table linkstore
+    add hot bigint default 0 null;
+
+alter table linkstore
+    add area varchar(20) default '' null comment '专区';
+
+alter table linkstore
+    add tips varchar(255) null comment '介绍';
+
+alter table linkstore
+    add domain varchar(255) null;
+
+alter table linkstore
+    add app int default 0 null comment '是否app';
+
+alter table linkstore
+    add install_num int default 0 null comment '安装量';
+
+alter table linkstore
+    add bgColor varchar(30) null comment '背景颜色';
+
+alter table linkstore
+    add vip int default 0 null comment '是否会员可见 0所有人 1=会员';
+
+alter table linkstore
+    add custom text null comment '自定义配置';
+
+alter table linkstore
+    add user_id int null comment '用户id';
+
+alter table linkstore
+    add status int default 1 null comment '状态 1=展示 0=待审核';
+
+
+#创建note数据表
+
+create table if not exists note
 (
-    id          bigint auto_increment
+    id bigint auto_increment
         primary key,
-    user_id     bigint        null,
-    title       varchar(50)   null,
-    text        text          null,
-    create_time datetime      null,
-    update_time datetime      null,
-    weight      int default 0 null,
     constraint note_id_uindex
         unique (id)
 );
 
+alter table note
+    add user_id bigint null;
+
+alter table note
+    add title varchar(50) null;
+
+alter table note
+    add text text null;
+
+alter table note
+    add create_time datetime null;
+
+alter table note
+    add update_time datetime null;
+
+alter table note
+    add weight int default 0 null;
+
 create index note_user_id_index
     on note (user_id);
 
-create table search_engine
+#创建search_engine数据表
+
+create table if not exists search_engine
 (
-    id          int auto_increment
-        primary key,
-    name        varchar(50)   null comment '名称',
-    icon        varchar(255)  null comment '图标 128x128',
-    url         varchar(255)  null comment '跳转url',
-    sort        int default 0 null comment '排序',
-    create_time datetime      null comment '添加时间',
-    status      int default 0 null comment '状态 0=关闭 1=启用',
-    tips        varchar(250)  null comment '搜索引擎介绍'
+    id int auto_increment
+        primary key
 )
     comment '搜索引擎';
 
-create table setting
+alter table search_engine
+    add name varchar(50) null comment '名称';
+
+alter table search_engine
+    add icon varchar(255) null comment '图标 128x128';
+
+alter table search_engine
+    add url varchar(255) null comment '跳转url';
+
+alter table search_engine
+    add sort int default 0 null comment '排序';
+
+alter table search_engine
+    add create_time datetime null comment '添加时间';
+
+alter table search_engine
+    add status int default 0 null comment '状态 0=关闭 1=启用';
+
+alter table search_engine
+    add tips varchar(250) null comment '搜索引擎介绍';
+
+
+#创建setting表
+
+create table if not exists setting
 (
     `keys` varchar(200) not null
-        primary key,
-    value  text         null
+        primary key
 );
 
-create table tabbar
+alter table setting
+    add value text null;
+
+#创建tabbar数据表
+
+create table if not exists tabbar
 (
-    user_id     int      null,
-    tabs        json     null,
-    update_time datetime null
+    user_id int null
 )
     comment '用户页脚信息';
 
-create table token
+alter table tabbar
+    add tabs longtext null;
+
+alter table tabbar
+    add update_time datetime null;
+
+#创建token表
+
+create table if not exists token
 (
-    id           bigint auto_increment
+    id bigint auto_increment
         primary key,
-    user_id      int          null,
-    token        tinytext     null,
-    create_time  int          null,
-    ip           tinytext     null,
-    user_agent   tinytext     null,
-    access_token varchar(200) null comment 'qq的令牌',
     constraint token_id_uindex
         unique (id)
 );
 
-create table user
+alter table token
+    add user_id int null;
+
+alter table token
+    add token tinytext null;
+
+alter table token
+    add create_time int null;
+
+alter table token
+    add ip tinytext null;
+
+alter table token
+    add user_agent tinytext null;
+
+alter table token
+    add access_token varchar(200) null comment 'qq的令牌';
+
+
+#创建user表
+
+create table if not exists user
 (
-    id               int auto_increment
+    id int auto_increment
         primary key,
-    avatar           varchar(255)  null comment '头像',
-    mail             varchar(50)   null,
-    password         tinytext      null,
-    create_time      datetime      null,
-    login_ip         varchar(100)  null comment '登录IP',
-    register_ip      varchar(100)  null comment '注册IP',
-    manager          int default 0 null,
-    login_fail_count int default 0 null,
-    login_time       datetime      null comment '登录时间',
-    qq_open_id       varchar(200)  null comment 'qq开放平台Id',
-    nickname         varchar(200)  null comment '昵称',
     constraint user_id_uindex
         unique (id)
 );
 
-create table user_search_engine
+alter table user
+    add avatar varchar(255) null comment '头像';
+
+alter table user
+    add mail varchar(50) null;
+
+alter table user
+    add password tinytext null;
+
+alter table user
+    add create_time datetime null;
+
+alter table user
+    add login_ip varchar(100) null comment '登录IP';
+
+alter table user
+    add register_ip varchar(100) null comment '注册IP';
+
+alter table user
+    add manager int default 0 null;
+
+alter table user
+    add login_fail_count int default 0 null;
+
+alter table user
+    add login_time datetime null comment '登录时间';
+
+alter table user
+    add qq_open_id varchar(200) null comment 'qq开放平台Id';
+
+alter table user
+    add nickname varchar(200) null comment '昵称';
+
+alter table user
+    add status int default 0 null comment '用户账号状态 0正常 1冻结';
+
+#创建user_search_engine表
+
+create table if not exists user_search_engine
 (
-    user_id int  not null
+    user_id int not null
         primary key,
-    list    json null,
     constraint user_search_engine_pk
         unique (user_id)
 )
     comment '用户搜索引擎同步表';
 
-create table wallpaper
+alter table user_search_engine
+    add list longtext null;
+
+
+#创建wallpaper表
+
+create table if not exists wallpaper
 (
-    id          int auto_increment
-        primary key,
-    type        int             null comment '1=folder；0=assets',
-    folder      int             null comment '0',
-    mime        int default 0   null comment '文件类型0=images，1=video',
-    url         text            null comment '图片地址',
-    cover       text            null comment '封面',
-    create_time datetime        null,
-    name        varchar(200)    null comment '标题',
-    sort        int default 999 null
+    id int auto_increment
+        primary key
 );
 
+alter table wallpaper
+    add type int null comment '1=folder；0=assets';
 
+alter table wallpaper
+    add folder int null comment '0';
 
+alter table wallpaper
+    add mime int default 0 null comment '文件类型0=images，1=video';
 
-INSERT INTO linkstore (name, src, url, type, size, create_time, hot, tips, domain, app, install_num) VALUES ('Bilibili', '/static/bilibili.png', 'https://bilibili.com', 'icon', '1x1', '2022-11-07 21:51:42', 0, 'Bilibili弹幕视频网站Acg网站', 'bilibili.com,www.bilibili.com', 0, 0);
-INSERT INTO linkstore (name, src, url, type, size, create_time, hot, tips, domain, app, install_num) VALUES ('蓝易云', '/static/tsy.png', 'https://www.tsyvps.com/aff/IRYIGFMX', 'icon', '1x1', '2022-11-07 22:02:41', 0, '蓝易云-持证高性价比服务器', 'www.tsyvps.com,tsyvps.com', 0, 0);
-INSERT INTO linkstore (name, src, url, type, size, create_time, hot, tips, domain, app, install_num) VALUES ('ImgUrl', '/static/imgurl.png', 'https://imgurl.ink', 'icon', '1x1', '2022-11-07 22:05:46', 0, 'ImgUrl图床，图片外链', 'imgurl.ink,www.imgurl.ink', 0, 0);
-INSERT INTO linkstore (name, src, url, type, size, create_time, hot, tips, domain, app, install_num) VALUES ('微博', '/static/weibo.png', 'http://weibo.com/', 'icon', '1x1', '2022-11-07 23:37:22', 1, '微博-随时随地发现新鲜事', 'weibo.com,www.weibo.com', 0, 0);
-INSERT INTO linkstore (name, src, url, type, size, create_time, hot, tips, domain, app, install_num) VALUES ('火山翻译', '/static/huoshanfanyi.png', 'https://translate.volcengine.com/translate', 'icon', '1x1', '2022-11-07 23:42:49', 1, '火山翻译-字节跳动旗下机器翻译品牌', 'translate.volcengine.com', 1, 1);
-INSERT INTO linkstore (name, src, url, type, size, create_time, hot, tips, domain, app, install_num) VALUES ('腾讯云', '/static/tencentcloud.png', 'https://cloud.tencent.com/', 'icon', '1x1', '2022-11-10 16:25:51', 1, '腾讯云', 'cloud.tencent.com', 0, 0);
-INSERT INTO linkstore (name, src, url, type, size, create_time, hot, tips, domain, app, install_num) VALUES ('阿里云', '/static/aliyun.png', 'https://www.aliyun.com/', 'icon', '1x1', '2022-11-10 17:30:17', 1, '阿里云', 'www.aliyun.com,aliyun.com', 0, 0);
-INSERT INTO linkstore (name, src, url, type, size, create_time, hot, tips, domain, app, install_num) VALUES ('腾讯视频', '/static/txsp.png', 'https://v.qq.com/channel/choice?channel_2022=1', 'icon', '1x1', '2022-12-19 19:34:45', 0, '腾讯视频', 'v.qq.com', 0, 0);
-INSERT INTO linkstore (name, src, url, type, size, create_time, hot, tips, domain, app, install_num) VALUES ('记事本', '/static/note.png', '/noteApp', 'icon', '1x1', '2023-06-14 21:13:15', 1,'记事本App', '/noteApp', 1, 3);
+alter table wallpaper
+    add url text null comment '图片地址';
 
+alter table wallpaper
+    add cover text null comment '封面';
 
-INSERT INTO search_engine (id, name, icon, url, sort, create_time, status, tips) VALUES (1, '百度', '/static/searchEngine/baidu.svg', 'https://www.baidu.com/s?wd={1}', 0, '2024-01-14 22:12:18', 1, '中国领先的搜索引擎和互联网公司，提供全球最大的中文搜索引擎服务，同时涵盖在线地图、贴吧、知道等多个互');
-INSERT INTO search_engine (id, name, icon, url, sort, create_time, status, tips) VALUES (3, '必应', '/static/searchEngine/bing.svg', 'https://www.bing.com/search?q={1}', 99, '2024-01-14 23:20:03', 1, '微软推出的搜索引擎，以直观的界面和优质搜索结果而闻名，提供全球范围内的多语言搜索服务');
-INSERT INTO search_engine (id, name, icon, url, sort, create_time, status, tips) VALUES (4, 'Google', '/static/searchEngine/google.svg', 'https://www.google.com/search?q={1}', 98, '2024-01-14 23:20:21', 1, 'Google：全球最大的搜索引擎，以卓越的搜索算法、广告服务和多样化的产品而著称，成为互联网信息检索');
-INSERT INTO search_engine (id, name, icon, url, sort, create_time, status, tips) VALUES (5, '搜狗', '/static/searchEngine/sougou.svg', 'https://www.sogou.com/web?query={1}', 0, '2024-01-14 23:20:46', 1, '中国领先的搜索引擎，致力于提供智能搜索和语音输入技术，以及多元化的互联网服务，深受用户喜爱');
-INSERT INTO search_engine (id, name, icon, url, sort, create_time, status, tips) VALUES (6, '360', '/static/searchEngine/360.svg', 'https://www.so.com/s?q={1}', 0, '2024-01-14 23:21:07', 1, '中国知名搜索引擎，注重用户隐私安全，提供全面的搜索服务，涵盖网页、图片、新闻等多个领域，致力于用户友');
-INSERT INTO search_engine (id, name, icon, url, sort, create_time, status, tips) VALUES (7, '开发者搜索', '/static/searchEngine/baidudev.png', 'https://kaifa.baidu.com/searchPage?module=SEARCH&wd={1}', 0, '2024-01-14 23:21:45', 1, '专注于技术文档、API 和开发者资源的搜索引擎，为开发者提供快速准确的技术信息检索服务，支持多种编程');
-INSERT INTO search_engine (id, name, icon, url, sort, create_time, status, tips) VALUES (8, 'B站', '/static/searchEngine/bilibiliico.png', 'https://search.bilibili.com/all?vt=21160573&keyword={1}', 0, '2024-01-14 23:21:57', 1, '中国弹幕视频平台，以二次元文化为特色，提供丰富的动画、游戏、音乐等内容，用户可通过弹幕互动分享观感。');
-INSERT INTO search_engine (id, name, icon, url, sort, create_time, status, tips) VALUES (9, '微博', '/static/searchEngine/weiboico.png', 'https://s.weibo.com/weibo?q={1}', 0, '2024-01-14 23:22:12', 1, '中国社交媒体平台，用户可以发布短文、图片和视频，关注他人并互动评论，是实时新闻、话题讨论和社交分享的');
-INSERT INTO search_engine (id, name, icon, url, sort, create_time, status, tips) VALUES (10, 'DuckDuckGo', '/static/searchEngine/DuckDuckGo.svg', 'https://duckduckgo.com/?t=h_&q={1}&ia=web', 96, '2024-01-15 21:37:44', 1, '注重隐私保护的搜索引擎，致力于不追踪用户个人信息，提供匿名、安全的搜索服务，受到关注的隐私倡导者青睐');
+alter table wallpaper
+    add create_time datetime null;
 
-INSERT INTO wallpaper (id, type, folder, mime, url, cover, create_time, name, sort) VALUES (1, 1, null, 0, null, null, '2024-02-22 12:29:21', '默认壁纸', 999);
-INSERT INTO wallpaper (id, type, folder, mime, url, cover, create_time, name, sort) VALUES (2, 0, 1, 0, '/static/wallpaper/wallpaper-1.jpeg', '/static/wallpaper/m_wallpaper-1.jpeg', '2024-02-22 12:35:59', null, 999);
-INSERT INTO wallpaper (id, type, folder, mime, url, cover, create_time, name, sort) VALUES (3, 0, 1, 0, '/static/wallpaper/wallpaper-2.jpeg', '/static/wallpaper/m_wallpaper-2.jpeg', '2024-02-22 12:36:27', null, 999);
-INSERT INTO wallpaper (id, type, folder, mime, url, cover, create_time, name, sort) VALUES (4, 0, 1, 0, '/static/wallpaper/wallpaper-3.jpeg', '/static/wallpaper/m_wallpaper-3.jpeg', '2024-02-22 12:36:43', null, 999);
-INSERT INTO wallpaper (id, type, folder, mime, url, cover, create_time, name, sort) VALUES (5, 0, 1, 0, '/static/wallpaper/wallpaper-4.jpeg', '/static/wallpaper/m_wallpaper-4.jpeg', '2024-02-22 12:36:52', null, 999);
-INSERT INTO wallpaper (id, type, folder, mime, url, cover, create_time, name, sort) VALUES (6, 0, 1, 0, '/static/wallpaper/wallpaper-5.jpeg', '/static/wallpaper/m_wallpaper-5.jpeg', '2024-02-22 12:37:03', null, 999);
+alter table wallpaper
+    add name varchar(200) null comment '标题';
+
+alter table wallpaper
+    add sort int default 999 null;
+
+##创建结束
+
+#补充内容 针对<5.7数据库使用longtext
+
+alter table history
+    modify link longtext null;
+
+alter table link
+    modify link longtext null;
+
+alter table config
+    modify config longtext null;
+
+alter table tabbar
+    modify tabs longtext null;
+
+alter table user_search_engine
+    modify list longtext null;
+
+#补充结束
