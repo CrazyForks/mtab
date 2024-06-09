@@ -18,7 +18,6 @@ INSERT INTO search_engine (id, name, icon, url, sort, create_time, status, tips)
 INSERT INTO search_engine (id, name, icon, url, sort, create_time, status, tips) VALUES (7, '开发者搜索', '/static/searchEngine/baidudev.png', 'https://kaifa.baidu.com/searchPage?module=SEARCH&wd={1}', 0, '2024-01-14 23:21:45', 1, '专注于技术文档、API 和开发者资源的搜索引擎，为开发者提供快速准确的技术信息检索服务，支持多种编程');
 INSERT INTO search_engine (id, name, icon, url, sort, create_time, status, tips) VALUES (8, 'B站', '/static/searchEngine/bilibiliico.png', 'https://search.bilibili.com/all?vt=21160573&keyword={1}', 0, '2024-01-14 23:21:57', 1, '中国弹幕视频平台，以二次元文化为特色，提供丰富的动画、游戏、音乐等内容，用户可通过弹幕互动分享观感。');
 INSERT INTO search_engine (id, name, icon, url, sort, create_time, status, tips) VALUES (9, '微博', '/static/searchEngine/weiboico.png', 'https://s.weibo.com/weibo?q={1}', 0, '2024-01-14 23:22:12', 1, '中国社交媒体平台，用户可以发布短文、图片和视频，关注他人并互动评论，是实时新闻、话题讨论和社交分享的');
-INSERT INTO search_engine (id, name, icon, url, sort, create_time, status, tips) VALUES (10, 'DuckDuckGo', '/static/searchEngine/DuckDuckGo.svg', 'https://duckduckgo.com/?t=h_&q={1}&ia=web', 96, '2024-01-15 21:37:44', 1, '注重隐私保护的搜索引擎，致力于不追踪用户个人信息，提供匿名、安全的搜索服务，受到关注的隐私倡导者青睐');
 
 INSERT INTO wallpaper (id, type, folder, mime, url, cover, create_time, name, sort) VALUES (1, 1, null, 0, null, null, '2024-02-22 12:29:21', '默认壁纸', 999);
 INSERT INTO wallpaper (id, type, folder, mime, url, cover, create_time, name, sort) VALUES (2, 0, 1, 0, '/static/wallpaper/wallpaper-1.jpeg', '/static/wallpaper/m_wallpaper-1.jpeg', '2024-02-22 12:35:59', null, 999);

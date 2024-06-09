@@ -329,7 +329,7 @@ class Api extends BaseController
                 if ($type == 'icon' || $type == 'avatar') {
                     $fp = joinPath(public_path(), $filePath);
                     $image = new \ImageBack($fp);
-                    $image->resize(120, 0)->save($fp);
+                    $image->resize(144, 0)->save($fp);
                 } else if ($type == 'AdminBackground') {
                     $minPath = joinPath($savePath, "/min_$fileName");
                     $fp = joinPath(public_path(), $filePath);

@@ -19,7 +19,7 @@ class LinkStore extends BaseController
         $area = $this->request->post('area', false);
         $sql = [];
         if ($name) {
-            $sql[] = ['name|tips', 'like', "%" . $name . "%"];
+            $sql[] = ['name|tips|url', 'like', "%" . $name . "%"];
         }
         $list = LinkStoreModel::where($sql)->where('status', 1)->order('hot', "desc")->withoutField('user_id');
         //area需要使用find_in_set来匹配
