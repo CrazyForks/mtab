@@ -1,8 +1,8 @@
 <?php
 
 namespace think;
-define('app_version', '2.0.2');
-define('app_version_code', 202);
+define('app_version', '2.0.4');
+define('app_version_code', 204);
 require __DIR__ . '/../vendor/autoload.php';
 
 // 执行HTTP应用并响应
