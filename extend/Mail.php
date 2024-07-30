@@ -20,7 +20,7 @@ class Mail
             'username' => SettingModel::Config('smtp_email'),
             'password' => SettingModel::Config('smtp_password'),
         ];
-        if ($option['port'] === 465) {
+        if ((int)$option['port'] === 465) {
             $option['secure'] = 'ssl';
         }
         $mailer = new SmtpMailer($option);
