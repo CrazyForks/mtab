@@ -158,7 +158,7 @@ alter table linkstore
     add src varchar(255) null;
 
 alter table linkstore
-    add url varchar(255) null;
+    add url text null;
 
 alter table linkstore
     add type varchar(20) default 'icon' null;
@@ -430,5 +430,8 @@ alter table tabbar
 
 alter table user_search_engine
     modify list longtext null;
+
+ALTER TABLE `linkstore` 
+	CHANGE `url` `url` TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL ;
 
 #补充结束

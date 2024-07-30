@@ -60,6 +60,18 @@ class Setting extends BaseController
         }
         return json(['msg' => 'ok', 'data' => false, 'success' => $this->auth, 'code' => 0, 'url' => $url]);
     }
+    function mailTest(): \think\response\Json
+    {
+        $admin = $this->getAdmin();
+        $email = $this->request->post("email");
+        $config  =$this->request->post("smtp",[]);
+        try {
+            \Mail::testMail($email, $config);
+            return $this->success('发送成功');
+        }catch (\Exception $e){
+            return $this->error($e->getMessage());
+        }
+    }
     function delExt(): \think\response\Json
     {
         $this->getAdmin();

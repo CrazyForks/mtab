@@ -11,6 +11,7 @@ use GuzzleHttp\Exception\RequestException;
 use PHPHtmlParser\Dom;
 use think\facade\Cache;
 use think\facade\Filesystem;
+use think\facade\Log;
 use think\facade\View;
 use think\helper\Str;
 
@@ -35,7 +36,8 @@ class Api extends BaseController
             'google_ext_link' => $this->systemSetting("google_ext_link", ''),
             'edge_ext_link' => $this->systemSetting("edge_ext_link", ''),
             'local_ext_link' => $this->systemSetting("local_ext_link", ''),
-            "customAbout" => $this->systemSetting("customAbout", '')
+            "customAbout" => $this->systemSetting("customAbout", ''),
+            "user_register" => $this->systemSetting("user_register", '0', true)
         ]);
     }
 
@@ -154,6 +156,9 @@ class Api extends BaseController
 
     private function hasOnlyPath($url): bool
     {
+        if(!$url){
+            return false;
+        }
         $parsedUrl = parse_url($url);
         // 检查是否存在路径但不存在域名和协议
         if (isset($parsedUrl['path']) && !isset($parsedUrl['host']) && !isset($parsedUrl['scheme'])) {
@@ -167,13 +172,14 @@ class Api extends BaseController
     {
         $avatar = $this->request->post('avatar');
         if ($avatar) {
-            $remote_avatar = $this->systemSetting("remote_avatar", "https://avatar.mtab.cc/6.x/bottts/png?seed=", true);
+            $remote_avatar = $this->systemSetting("remote_avatar", "https://avatar.mtab.cc/6.x/icons/png?seed=", true);
             $str = $this->downloadFile($remote_avatar . $avatar, md5($avatar) . '.png');
             return $this->success(['src' => $str]);
         }
         $url = $this->request->post('url', false);
         $icon = "";
         $cdn = $this->systemSetting('assets_host', '');
+        $title = "";
         if ($url) {
             $realUrl = $this->addHttpProtocolRemovePath($url);
             $client = \Axios::http();
@@ -191,18 +197,12 @@ class Api extends BaseController
                 $body = $response->getBody()->getContents();
                 $dom = new Dom();
                 $dom->loadStr($body);
-                $title = $dom->find('title');
-                if (count($title) > 0) {
-                    $title = $title->innerText;
+                $titles = $dom->find('title');
+                if (count($titles) > 0) {
+                    $title = $titles->innerText;
                 }
                 try {
                     $list = $dom->find('[rel="icon"]');
-                    if (count($list) == 0) {
-                        $list = $dom->find('[rel="shortcut icon"]');
-                    }
-                    if (count($list) == 0) {
-                        $list = $dom->find('[rel="Shortcut Icon"]');
-                    }
                     if (count($list) > 0) {
                         $href = $list->href;
                         if ($this->hasOnlyPath($href)) {
@@ -290,12 +290,12 @@ class Api extends BaseController
     {
         $send = $this->request->get('seed');
         $client = new Client();
-        $remote_avatar = $this->systemSetting('remote_avatar', 'https://avatar.mtab.cc/6.x/bottts/png?seed=', true);
+        $remote_avatar = $this->systemSetting('remote_avatar', 'https://avatar.mtab.cc/6.x/icons/png?seed=', true);
         $response = $client->get($remote_avatar . urlencode($send), [
             'stream' => true,
             'timeout' => 10,
         ]);
-        return response($response->getBody(), 200, ['Content-Type' => 'image/png']);
+        return response($response->getBody(), 200, ['Content-Type' => $response->getHeader("content-type")[0]]);
     }
 
     function upload(): \think\response\Json

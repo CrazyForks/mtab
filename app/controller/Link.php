@@ -9,6 +9,7 @@ use app\model\LinkModel;
 use app\model\TabbarModel;
 use app\model\UserSearchEngineModel;
 use think\facade\Cache;
+use think\facade\Db;
 
 class Link extends BaseController
 {
@@ -20,7 +21,10 @@ class Link extends BaseController
             if ($link) {
                 $is = LinkModel::where("user_id", $user['user_id'])->find();
                 if ($is) {
-                    HistoryModel::create(['user_id' => $user['user_id'], 'link' => $is['link']]); //历史记录备份,用于用户误操作恢复用途
+                    HistoryModel::create(['user_id' => $user['user_id'], 'link' => $is['link'], 'create_time' => date("Y-m-d H:i:s")]); //历史记录备份,用于用户误操作恢复用途
+                    $ids = HistoryModel::where("user_id", $user['user_id'])->order("id", 'desc')->limit(50)->select()->toArray();
+                    $ids = array_column($ids, "id");
+                    HistoryModel::where("user_id", $user['user_id'])->whereNotIn("id", $ids)->delete();
                     $is->link = $link;
                     $is->save();
                 } else {

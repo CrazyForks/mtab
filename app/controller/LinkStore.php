@@ -14,19 +14,19 @@ class LinkStore extends BaseController
 
     public function list(): \think\response\Json
     {
-        $limit = $this->request->post('limit', 15);
+        $limit = $this->request->post('limit', 12);
         $name = $this->request->post('name', false);
         $area = $this->request->post('area', false);
         $sql = [];
         if ($name) {
             $sql[] = ['name|tips|url', 'like', "%" . $name . "%"];
         }
-        $list = LinkStoreModel::where($sql)->where('status', 1)->order('hot', "desc")->withoutField('user_id');
+        $list = LinkStoreModel::where($sql)->where('status', 1)->withoutField('user_id');
         //area需要使用find_in_set来匹配
         if ($area && $area != 0) {
             $list = $list->whereRaw("find_in_set('$area',area)");
         }
-        $list = $list->order("create_time", 'desc')->paginate($limit);
+        $list = $list->order(["hot" => 'desc', "create_time" => 'desc'])->paginate($limit);
         return $this->success('ok', $list);
     }
 
@@ -75,7 +75,7 @@ class LinkStore extends BaseController
         $info['create_time'] = date("Y-m-d H:i:s");
         $info['domain'] = $this->getDomain($info['url']);
         $info['src'] = $this->downloadLogo($info['src']);
-        FileModel::addFile($info['src'],$user['id']);
+        FileModel::addFile($info['src'], $user['id']);
         if (isset($info['id'])) {
             unset($info['id']);
         }
@@ -266,12 +266,12 @@ class LinkStore extends BaseController
         foreach (LinkStoreModel::where('status', 1)->cursor() as $value) {
             $d = $this->getDomain($value['url']);
             if (in_array($d, $domains)) {
-                $tmp[$d] = ["domain" => $d, "name" => $value['name'], "src" => $value['src'], "bgColor" => $value['bgColor'],'tips'=>$value['tips']];
+                $tmp[$d] = ["domain" => $d, "name" => $value['name'], "src" => $value['src'], "bgColor" => $value['bgColor'], 'tips' => $value['tips']];
             } else if ($value['domain']) {
                 $r = explode(",", $value['domain']);
                 foreach ($r as $v) {
                     if (in_array($v, $domains)) {
-                        $tmp[$v] = ['domain' => $v, 'name' => $value['name'], 'src' => $value['src'], 'bgColor' => $value['bgColor'],'tips'=>$value['tips']];
+                        $tmp[$v] = ['domain' => $v, 'name' => $value['name'], 'src' => $value['src'], 'bgColor' => $value['bgColor'], 'tips' => $value['tips']];
                         break;
                     }
                 }

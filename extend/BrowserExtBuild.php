@@ -111,6 +111,9 @@ class BrowserExtBuild
     //处理logo问题
     function copyIcon()
     {
+        if (!is_dir(joinPath($this->buildDir, 'icon'))) {
+            mkdir(joinPath($this->buildDir, 'icon'));
+        }
         copy(joinPath(public_path(), $this->info['ext_logo_64']), joinPath($this->buildDir, "icon/64.png"));
         copy(joinPath(public_path(), $this->info['ext_logo_128']), joinPath($this->buildDir, "icon/128.png"));
         copy(joinPath(public_path(), $this->info['ext_logo_192']), joinPath($this->buildDir, "icon/192.png"));

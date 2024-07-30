@@ -729,6 +729,7 @@
       "blur": 0,
       "timeColor": "#fff",
       "tabbar": true,
+      "tabbarMode": false,
       "iconWidth": 60,
       "iconBg": false,
       "LinkTitle": false,
@@ -746,7 +747,8 @@
       "timeMonthDay": true,
       "timeLunar": true,
       "time24": true,
-      "maxColumn":14
+      "maxColumn": 14,
+      "latestPageGroup": false
     }
   }
 }

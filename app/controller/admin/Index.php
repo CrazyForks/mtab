@@ -200,7 +200,8 @@ class Index extends BaseController
                 'form_params' => [
                     'authorization_code' => $this->authCode,
                     'name_en' => $name_en,
-                    'version' => $version
+                    'version' => $version,
+                    'version_code' => app_version_code,
                 ]
             ]);
             try {
@@ -360,8 +361,8 @@ class Index extends BaseController
                 $arrName[] = $value['name'];
                 $arrUrl[] = $value['url'];
             }
-            $res = LinkStoreModel::whereOr([["name",'in', $arrName],['url','in',$arrUrl]])->select();
-            return json(['code'=>1,'msg'=>'ok','data'=>$json['data'],'local'=>$res]);
+            $res = LinkStoreModel::whereOr([["name", 'in', $arrName], ['url', 'in', $arrUrl]])->select();
+            return json(['code' => 1, 'msg' => 'ok', 'data' => $json['data'], 'local' => $res]);
         }
         return $this->success('获取失败');
     }

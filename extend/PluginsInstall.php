@@ -57,7 +57,7 @@ class PluginsInstall
             //删除下载的更新包
             $this->delZip();
             //更新完后的一些操作
-            if (mb_strlen($this->update_sql) > 0) {
+            if (file_exists("{$this->root_path}{$this->directory}/install.sql")) {
                 $this->updateSql();
             }
         }
@@ -106,7 +106,7 @@ class PluginsInstall
     //升级的数据库
     function updateSql()
     {
-        $f = fopen($this->update_sql, 'r');
+        $f = fopen("{$this->root_path}{$this->directory}/install.sql", 'r');
         $sql = '';
         do {
             $sqlTmp = fread($f, 1024);

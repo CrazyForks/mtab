@@ -47,7 +47,7 @@ class User extends BaseController
         $auth = $this->refreshToken($info);
         $info->login_ip = getRealIp();
         $info->login_time = date('Y-m-d H:i:s');
-        $info->login_fail_count = 0;//登陆成功将失败次数归零
+        $info->login_fail_count = 0; //登陆成功将失败次数归零
         $info->save();
         return $this->success('登录成功', $auth);
     }
@@ -71,6 +71,9 @@ class User extends BaseController
 
     function register(): \think\response\Json
     {
+        if ($this->systemSetting("user_register", '0', true) === '1') {
+            return $this->error('管理员已关闭用户注册功能');
+        }
         $user = $this->request->post('username', false);
         $pass = $this->request->post('password', false);
         $code = $this->request->post('code', '0000');
@@ -281,18 +284,18 @@ class User extends BaseController
                         return View::fetch('/qq_login_error');
                     }
                     //如果openid数据库不存在说明QQ没有被绑定过，可以绑定
-                    $this->BindQQ($openid);//绑定后需要替换Token，不然之前的QQ登录会失效
+                    $this->BindQQ($openid); //绑定后需要替换Token，不然之前的QQ登录会失效
                 }
                 $info = UserModel::where('qq_open_id', $openid)->find();
-                if (!$info) {//不存在就创建一个新用户,如果上一个步骤绑定成功的话，是不可能进入此步骤的
+                if (!$info) { //不存在就创建一个新用户,如果上一个步骤绑定成功的话，是不可能进入此步骤的
                     UserModel::insert(['mail' => '', 'password' => md5(time()), 'create_time' => date('Y-m-d H:i:s'), 'register_ip' => getRealIp(), 'qq_open_id' => $openid]);
                     $info = UserModel::where('qq_open_id', $openid)->find();
-                    $this->getUserOpenInfo($access_token, $openid);//获取一些用户的默认信息
+                    $this->getUserOpenInfo($access_token, $openid); //获取一些用户的默认信息
                 }
-                if ($info) {//如果用户存在
+                if ($info) { //如果用户存在
                     $info->login_ip = getRealIp();
                     $info->login_time = date('Y-m-d H:i:s');
-                    $info->login_fail_count = 0;//登陆成功将失败次数归零
+                    $info->login_fail_count = 0; //登陆成功将失败次数归零
                     $info->save();
                     $info['access_token'] = $access_token;
                     $auth = $this->refreshToken($info);
