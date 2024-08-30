@@ -411,27 +411,3 @@ alter table wallpaper
 
 alter table wallpaper
     add sort int default 999 null;
-
-##创建结束
-
-#补充内容 针对<5.7数据库使用longtext
-
-alter table history
-    modify link longtext null;
-
-alter table link
-    modify link longtext null;
-
-alter table config
-    modify config longtext null;
-
-alter table tabbar
-    modify tabs longtext null;
-
-alter table user_search_engine
-    modify list longtext null;
-
-ALTER TABLE `linkstore` 
-	CHANGE `url` `url` TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL ;
-
-#补充结束
