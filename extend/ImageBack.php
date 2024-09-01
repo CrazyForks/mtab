@@ -58,7 +58,7 @@ class ImageBack
                 $this->croppedHeight = $this->height;
             }
             $this->cropped = imagecreatetruecolor($this->croppedWidth, $this->croppedHeight);
-            if ($this->funName == 'png') {
+            if ($this->funName == 'png'|| $this->funName == 'webp') {
                 // 将图像设置为支持 alpha 通道的模式
                 imagealphablending($this->cropped, false);
                 imagesavealpha($this->cropped, true);

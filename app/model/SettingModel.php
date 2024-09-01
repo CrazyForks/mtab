@@ -14,7 +14,7 @@ class SettingModel extends Model
 {
     protected $name = "setting";
     protected $pk = "keys";
-    static array $CacheConfig = [];
+    static $CacheConfig = [];
 
 
     public static function Config($key = false, $default = '##')
@@ -30,7 +30,7 @@ class SettingModel extends Model
             }
         }
         if ($key) {
-            if (isset($config[$key])) {
+            if (isset($config[$key]) && $config[$key]!='') {
                 return $config[$key];
             }
             if ($default !== '##') {

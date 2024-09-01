@@ -177,10 +177,14 @@ class User extends BaseController
     {
         $info = $this->getUser(true);
         if ($info) {
-            $info = UserModel::field('id,mail,manager,nickname,avatar,qq_open_id')->find($info['user_id']);
+            $info = UserModel::field('id,mail,manager,nickname,avatar,qq_open_id,active')->find($info['user_id']);
             if ($info['qq_open_id']) {
                 $info['qqBind'] = true;
                 unset($info['qq_open_id']);
+            }
+            if($info['active']!==date("Y-m-d")){
+                $info['active'] = date("Y-m-d");
+                $info->save();
             }
             return $this->success('ok', $info);
         }

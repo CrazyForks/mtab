@@ -4,7 +4,7 @@ create table if not exists card
 (
     id int auto_increment
         primary key
-) comment '卡片数据表';
+) character set  utf8mb4 collate utf8mb4_general_ci comment '卡片数据表';
 
 
 alter table card
@@ -52,7 +52,7 @@ alter table card
 create table if not exists config
 (
     user_id int null
-) comment '用户配置数据表';
+) character set  utf8mb4 collate utf8mb4_general_ci comment '用户配置数据表';
 
 create index config_user_id_index
     on config (user_id);
@@ -66,8 +66,7 @@ create table if not exists file
 (
     id bigint auto_increment
         primary key
-)
-    comment '文件';
+) character set  utf8mb4 collate utf8mb4_general_ci comment '文件';
 
 alter table file
     add path varchar(255) null;
@@ -85,6 +84,7 @@ alter table file
     add mime_type varchar(100) null comment '文件类型';
 
 
+
 #创建history数据表
 
 create table if not exists history
@@ -94,8 +94,7 @@ create table if not exists history
 
     constraint history_id_uindex
         unique (id)
-)
-    comment 'link历史数据';
+)  character set  utf8mb4 collate utf8mb4_general_ci comment 'link历史数据';
 
 alter table history
     add user_id int null;
@@ -112,7 +111,7 @@ alter table history
 create table if not exists link
 (
     user_id int null
-);
+) character set  utf8mb4 collate utf8mb4_general_ci;
 
 create index link_user_id_index
     on link (user_id);
@@ -131,8 +130,7 @@ create table if not exists link_folder
 (
     id int auto_increment comment 'id'
         primary key
-)
-    comment '标签链接分类';
+) character set  utf8mb4 collate utf8mb4_general_ci comment '标签链接分类';
 
 alter table link_folder
     add name varchar(50) null comment '分类名称';
@@ -149,7 +147,7 @@ create table if not exists linkstore
         primary key,
     constraint linkStore_id_uindex
         unique (id)
-);
+)  character set  utf8mb4 collate utf8mb4_general_ci;
 
 alter table linkstore
     add name varchar(255) null;
@@ -203,6 +201,8 @@ alter table linkstore
     add status int default 1 null comment '状态 1=展示 0=待审核';
 
 
+
+
 #创建note数据表
 
 create table if not exists note
@@ -211,7 +211,7 @@ create table if not exists note
         primary key,
     constraint note_id_uindex
         unique (id)
-);
+)  character set  utf8mb4 collate utf8mb4_general_ci;
 
 alter table note
     add user_id bigint null;
@@ -240,8 +240,7 @@ create table if not exists search_engine
 (
     id int auto_increment
         primary key
-)
-    comment '搜索引擎';
+) character set  utf8mb4 collate utf8mb4_general_ci comment '搜索引擎';
 
 alter table search_engine
     add name varchar(50) null comment '名称';
@@ -271,7 +270,7 @@ create table if not exists setting
 (
     `keys` varchar(200) not null
         primary key
-);
+) character set  utf8mb4 collate utf8mb4_general_ci;
 
 alter table setting
     add value text null;
@@ -281,8 +280,7 @@ alter table setting
 create table if not exists tabbar
 (
     user_id int null
-)
-    comment '用户页脚信息';
+) character set  utf8mb4 collate utf8mb4_general_ci comment '用户页脚信息';
 
 alter table tabbar
     add tabs longtext null;
@@ -298,7 +296,7 @@ create table if not exists token
         primary key,
     constraint token_id_uindex
         unique (id)
-);
+) character set  utf8mb4 collate utf8mb4_general_ci;
 
 alter table token
     add user_id int null;
@@ -327,7 +325,7 @@ create table if not exists user
         primary key,
     constraint user_id_uindex
         unique (id)
-);
+) character set  utf8mb4 collate utf8mb4_general_ci;
 
 alter table user
     add avatar varchar(255) null comment '头像';
@@ -365,6 +363,9 @@ alter table user
 alter table user
     add status int default 0 null comment '用户账号状态 0正常 1冻结';
 
+alter table user
+    add active date null comment '今日是否活跃';
+
 #创建user_search_engine表
 
 create table if not exists user_search_engine
@@ -373,8 +374,7 @@ create table if not exists user_search_engine
         primary key,
     constraint user_search_engine_pk
         unique (user_id)
-)
-    comment '用户搜索引擎同步表';
+) character set  utf8mb4 collate utf8mb4_general_ci comment '用户搜索引擎同步表';
 
 alter table user_search_engine
     add list longtext null;
@@ -386,7 +386,7 @@ create table if not exists wallpaper
 (
     id int auto_increment
         primary key
-);
+) character set  utf8mb4 collate utf8mb4_general_ci;
 
 alter table wallpaper
     add type int null comment '1=folder；0=assets';
@@ -411,3 +411,5 @@ alter table wallpaper
 
 alter table wallpaper
     add sort int default 999 null;
+
+##创建结束

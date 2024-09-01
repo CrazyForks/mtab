@@ -37,7 +37,16 @@ class Api extends BaseController
             'edge_ext_link' => $this->systemSetting("edge_ext_link", ''),
             'local_ext_link' => $this->systemSetting("local_ext_link", ''),
             "customAbout" => $this->systemSetting("customAbout", ''),
-            "user_register" => $this->systemSetting("user_register", '0', true)
+            "user_register" => $this->systemSetting("user_register", '0', true),
+            "tip"=>[
+                "ds_status"=> $this->systemSetting('ds_status', '0', true),
+                "ds_template"=> $this->systemSetting('ds_template', 'org', true),
+                "ds_alipay_img"=>$this->systemSetting('ds_alipay_img', '', true),
+                "ds_wx_img"=>$this->systemSetting('ds_wx_img', '', true),
+                "ds_custom_url"=>$this->systemSetting("ds_custom_url",'',true),
+                'ds_title' => $this->systemSetting('ds_title', '', true),
+                'ds_tips' => $this->systemSetting('ds_tips', '', true)
+            ]
         ]);
     }
 

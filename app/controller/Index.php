@@ -4,6 +4,7 @@ namespace app\controller;
 
 use app\BaseController;
 use app\model\SettingModel;
+use Cassandra\Set;
 use think\facade\View;
 use think\Request;
 
@@ -21,9 +22,10 @@ class Index extends BaseController
             $customHead .= '<link rel="manifest" href="/manifest.json">';
         }
         View::assign("customHead", $customHead);
-        View::assign("favicon", SettingModel::Config('logo', '/favicon.ico'));
+        View::assign("favicon", SettingModel::Config('favicon', SettingModel::Config('logo', '/favicon.ico')));
         return View::fetch("dist/index.html");
     }
+
     function all()
     {
         $app = app();
@@ -45,7 +47,7 @@ class Index extends BaseController
     function privacy(): string
     {
         $content = $this->systemSetting("privacy", "");
-        return View::fetch('/privacy', ['content' => $content,'title'=>$this->systemSetting("title",''), 'logo' => $this->systemSetting('logo', '')]);
+        return View::fetch('/privacy', ['content' => $content, 'title' => $this->systemSetting("title", ''), 'logo' => $this->systemSetting('logo', '')]);
     }
 
     function favicon()
@@ -70,7 +72,7 @@ class Index extends BaseController
             'theme_color' => SettingModel::Config('theme_color', '#141414'),
             'icons' => [
                 [
-                    'src' => SettingModel::Config('logo', '/favicon.ico'),
+                    'src' => SettingModel::Config('favicon', SettingModel::Config('logo', '/favicon.ico')),
                     'sizes' => '144x144'
                 ]
             ],

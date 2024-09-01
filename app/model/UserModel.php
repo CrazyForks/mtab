@@ -1,16 +1,26 @@
 <?php
-
-
 namespace app\model;
-
-
 use think\Model;
 
 class UserModel extends Model
 {
     protected $name = "user";
     protected $pk = "id";
+    // 设置字段信息
     protected static $user_temp = null;
+
+    protected function getManagerAttr($value): int
+    {
+        return (int) $value;
+    }
+    protected function getIdAttr($value): int
+    {
+        return (int) $value;
+    }
+    protected function getStatusAttr($value): int
+    {
+        return (int) $value;
+    }
 
     public static function getUser(bool $must = false)
     {
@@ -26,7 +36,7 @@ class UserModel extends Model
             if (self::$user_temp) return self::$user_temp;
             $user = TokenModel::where('user_id', $id)->where('token', $token)->field('user_id,token,create_time')->find();
             if ($user) {
-                $status = UserModel::where('id', $user['user_id'])->find();
+                $status = self::where('id', $user['user_id'])->find();
                 if ($status && $status['status'] === 0) {
                     if (time() > ($user['create_time'] + 60 * 60 * 24 * 15)) {//如果创建时间大于15天则删除
                         $user->delete();

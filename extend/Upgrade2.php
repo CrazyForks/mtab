@@ -62,6 +62,9 @@ class Upgrade2
         if (strlen($this->update_sql_url) > 1) {
             $this->updateSql();
         }
+        if (file_exists("{$this->root_path}install.sql")) {
+            $this->updateSql("{$this->root_path}install.sql");
+        }
         //退出
         return true;
     }
@@ -105,9 +108,13 @@ class Upgrade2
     }
 
     //升级的数据库
-    function updateSql()
+    function updateSql($path=null)
     {
-        $f = fopen($this->update_sql_url, 'r');
+        if($path){
+            $f = fopen($path, 'r');
+        }else{
+            $f = fopen($this->update_sql_url, 'r');
+        }
         $sql = "";
         do {
             $sqlTmp = fread($f, 1024);
@@ -121,7 +128,6 @@ class Upgrade2
                 try {
                     \think\facade\Db::execute($sql_statement);
                 } catch (Exception $e) {
-
                 }
             }
         }

@@ -24,16 +24,18 @@ if [ ! -e "$lock_file" ]; then
     chmod -R 777 "$destination_dir"
     # 创建锁文件
     touch "$lock_file"
-    rm -rf "$source_dir";
+    rm -rf "$source_dir"
 fi
 
 if [ -e "/app/public/installed.lock" ]; then
     # 如果锁文件存在，执行以下更新数据库操作
-    echo "检查数据库更新...";
+    echo "检查数据库更新..."
     php "$destination_dir/think" repair
+else
+  php "/app/env.php";#安装脚本
 fi
 
-echo "php-fpm7,redis and nginx started";
+echo "php-fpm7,redis and nginx started"
 
 while true; do
     sleep 2

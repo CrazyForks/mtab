@@ -24,7 +24,7 @@ class LinkStore extends BaseController
         $list = LinkStoreModel::where($sql)->where('status', 1)->withoutField('user_id');
         //area需要使用find_in_set来匹配
         if ($area && $area != 0) {
-            $list = $list->whereRaw("find_in_set('$area',area)");
+            $list = $list->whereRaw("find_in_set(?,area)",[$area]);
         }
         $list = $list->order(["hot" => 'desc', "create_time" => 'desc'])->paginate($limit);
         return $this->success('ok', $list);
@@ -43,7 +43,7 @@ class LinkStore extends BaseController
         $list = LinkStoreModel::with(['userInfo'])->where($sql);
         //area需要使用find_in_set来匹配
         if ($area && $area != '全部') {
-            $list = $list->whereRaw("find_in_set('$area',area)");
+            $list = $list->whereRaw("find_in_set(?,area)",[$area]);
         }
         $list = $list->order($this->request->post('sort.prop', 'id'), $this->request->post('sort.order', 'asc'))->paginate($limit);
         return json(["msg" => "ok", 'data' => $list, 'auth' => $this->auth]);
@@ -182,7 +182,7 @@ class LinkStore extends BaseController
                 $url = parse_url($url);
                 $url = $url['host'];
             }
-            $data = LinkStoreModel::whereRaw("FIND_IN_SET('$url',domain)")->find();
+            $data = LinkStoreModel::whereRaw("FIND_IN_SET(?,domain)",[$url])->find();
             if ($data) {
                 return $this->success('ok', $data);
             }
@@ -224,8 +224,8 @@ class LinkStore extends BaseController
                 Db::query(
                     "UPDATE linkstore
                      SET area = TRIM(BOTH ',' FROM REPLACE(CONCAT(',', area, ','), ',$id,', ','))
-                     WHERE FIND_IN_SET('$id', area) > 0;"
-                );
+                     WHERE FIND_IN_SET(?, area) > 0;"
+                ,[$id]);
             }
         }
         return $this->success('处理完毕！');

@@ -127,7 +127,22 @@ class Admin extends BaseController
 
         return $fileCount;
     }
-
+    function xyCheck(): \think\response\Json
+    {
+        $this->getAdmin();
+        if(is_file(root_path() . 'xy.pem')){
+            if(file_get_contents(root_path().'xy.pem')===file_get_contents(config_path().'LICENSE.html')){
+                return $this->success("ok");
+            }
+        }
+        return $this->error("未找到证书文件",['license'=>file_get_contents(config_path().'LICENSE.html')]);
+    }
+    function xy(): \think\response\Json
+    {
+        $this->getAdmin();
+        file_put_contents(root_path()."xy.pem", file_get_contents(config_path().'LICENSE.html'));
+        return $this->success("ok");
+    }
     function getServicesStatus(): \think\response\Json
     {
         $this->getAdmin();
@@ -135,7 +150,15 @@ class Admin extends BaseController
         $linkNum = LinkStoreModel::count('id');
         $redisNum = 0;
         $fileNum = FileModel::field('id')->count("id");
-        return $this->success('ok', ['userNum' => $userNum, 'linkNum' => $linkNum, 'redisNum' => $redisNum, 'fileNum' => $fileNum]);
+        $userWeekActive = 0;
+        if (Cache::get('userWeekActive')) {
+            $userWeekActive = Cache::get('userWeekActive');
+        } else {
+            $start = date('Y-m-d', strtotime('-7 days'));
+            $userWeekActive = UserModel::where('active',">", $start)->field("id,active")->count('id');
+            Cache::set('userWeekActive', $userWeekActive, 60);
+        }
+        return $this->success('ok', ['userNum' => $userNum, 'linkNum' => $linkNum, 'redisNum' => $redisNum, 'fileNum' => $fileNum,"userWeekActive"=>$userWeekActive]);
     }
 
     function getUserLine(): \think\response\Json

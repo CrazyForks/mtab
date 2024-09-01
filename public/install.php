@@ -3,7 +3,6 @@ function params($key, $default_value = '')
 {
     return $_POST[$key] ?? $default_value;
 }
-
 $run = true;
 if (file_exists('./installed.lock')) {//如果没有安装的就提示安装
     header('Location: /');
@@ -94,7 +93,11 @@ if ($db_username && $php_version && $fileinfo_ext && $curl_ext && $zip_ext) {
             $sql_statements = explode(';', trim($sql_file_content));
             foreach ($sql_statements as $sql_statement) {
                 if (!empty($sql_statement)) {
-                    $conn->query($sql_statement);
+                    try {
+                        $conn->query($sql_statement);
+                    }catch (Exception $exception){
+
+                    }
                 }
             }
             //默认的一些基础数据
@@ -103,7 +106,11 @@ if ($db_username && $php_version && $fileinfo_ext && $curl_ext && $zip_ext) {
             $sql_statements = explode(';', trim($sql_file_content));
             foreach ($sql_statements as $sql_statement) {
                 if (!empty($sql_statement)) {
-                    $conn->query($sql_statement);
+                    try {
+                        $conn->query($sql_statement);
+                    }catch (Exception $exception){
+
+                    }
                 }
             }
             $admin_password = md5($admin_password);
@@ -255,7 +262,7 @@ EOF;
         <div style="font-size: 25px;font-weight: bold;margin-bottom: 15px;">
             请优先授权程序可执行权限(755及以上的权限)，并检查并安装以下php扩展
         </div>
-        <div style="margin-bottom: 30px;display: flex;flex-wrap: wrap;gap:15px 40px;">
+        <div style="margin-bottom: 20px;display: flex;flex-wrap: wrap;gap:15px 40px;">
             <b>
                 php版本>7.4
                 <?php if ($php_version) { ?>
@@ -296,6 +303,9 @@ EOF;
                     <span style='color: red'>✘</span>
                 <?php } ?>
             </b>
+        </div>
+        <div style='margin-bottom: 30px;font-weight: bolder;font-size: 19px;color: #19a673;'>
+            mTab书签相关文档：<a target="_blank" style="color:inherit" href="https://www.mtab.cc/document.html">https://www.mtab.cc/document.html</a>
         </div>
         <label for='db_host'>mysql数据库地址: <span style='font-size: 13px;color: #1d5cdc'>Mysql数据库版本必须大于等于5.7及以上，内存大于6G推荐Mysql8,小于推荐Mysql5.7</span></label>
         <input value="<?php echo $db_host; ?>"
@@ -423,6 +433,9 @@ EOF;
         <p>这是一个多用户的书签导航程序，用户之间数据是隔离的不受干扰</p>
         <p>可以使用鼠标右键在桌面点击呼出菜单。</p>
         <p>很多功能就在鼠标右键菜单内。别怪我没告诉你哟hahaha~</p>
+        <div style='margin-bottom: 30px;font-weight: bolder;font-size: 19px;color: #19a673;'>
+            mTab书签相关文档：<a target='_blank' style='color:inherit' href='https://www.mtab.cc/document.html'>https://www.mtab.cc/document.html</a>
+        </div>
     </div>
     </body>
     </html>

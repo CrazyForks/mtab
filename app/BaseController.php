@@ -17,7 +17,6 @@ use think\App;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\DbException;
 use think\db\exception\ModelNotFoundException;
-use think\Exception;
 use think\facade\Config;
 use think\Model;
 
@@ -65,6 +64,7 @@ class BaseController
         $this->request = $this->app->request;
         // 控制器初始化
         $this->initialize();
+
     }
 
     // 初始化

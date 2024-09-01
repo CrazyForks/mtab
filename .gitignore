@@ -15,3 +15,4 @@ public/installed.lock
 /mtab
 mtab.zip
 /public/dist/
+/public/static/exportsTabLink.json
