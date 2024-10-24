@@ -21,4 +21,19 @@ class LinkStoreModel extends Model
     {
         return $this->hasOne(UserModel::class, 'id', 'user_id')->field('id,nickname');
     }
+    function setGroupIdsAttr($val): string
+    {
+        if (count($val) > 0) {
+            return join(',', $val);
+        }
+        return '0';
+    }
+
+    function getGroupIdsAttr($val): array
+    {
+        if (strlen($val)) {
+            return array_map('intval', explode(',', $val));
+        }
+        return [];
+    }
 }

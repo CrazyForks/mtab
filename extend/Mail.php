@@ -9,17 +9,20 @@ class Mail
     public static function send($to = "", $text = ""): bool
     {
         $mail = new Message;
-        $send_mail = SettingModel::Config('smtp_email');
+        $send_mail = SettingModel::Config('smtp_email',false);
+        $option = [
+            'port' => SettingModel::Config('smtp_port'),
+            'host' => SettingModel::Config('smtp_host',false),
+            'username' => SettingModel::Config('smtp_email'),
+            'password' => SettingModel::Config('smtp_password'),
+        ];
+        if (!$send_mail || !$option['host']) {
+            return abort(0, "管理员没有配置SMTP邮件服务");
+        }
         $mail->setFrom(SettingModel::Config('title', '') . " <$send_mail>")
             ->addTo($to)
             ->setSubject(SettingModel::Config('title', '') . '动态令牌')
             ->setHtmlBody($text);
-        $option = [
-            'port' => SettingModel::Config('smtp_port'),
-            'host' => SettingModel::Config('smtp_host'),
-            'username' => SettingModel::Config('smtp_email'),
-            'password' => SettingModel::Config('smtp_password'),
-        ];
         if ((int)$option['port'] === 465) {
             $option['secure'] = 'ssl';
         }

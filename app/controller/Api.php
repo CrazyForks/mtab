@@ -6,12 +6,11 @@ use app\BaseController;
 use app\model\FileModel;
 use app\model\LinkModel;
 use app\model\SettingModel;
+use DOMDocument;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
-use PHPHtmlParser\Dom;
 use think\facade\Cache;
 use think\facade\Filesystem;
-use think\facade\Log;
 use think\facade\View;
 use think\helper\Str;
 
@@ -38,12 +37,12 @@ class Api extends BaseController
             'local_ext_link' => $this->systemSetting("local_ext_link", ''),
             "customAbout" => $this->systemSetting("customAbout", ''),
             "user_register" => $this->systemSetting("user_register", '0', true),
-            "tip"=>[
-                "ds_status"=> $this->systemSetting('ds_status', '0', true),
-                "ds_template"=> $this->systemSetting('ds_template', 'org', true),
-                "ds_alipay_img"=>$this->systemSetting('ds_alipay_img', '', true),
-                "ds_wx_img"=>$this->systemSetting('ds_wx_img', '', true),
-                "ds_custom_url"=>$this->systemSetting("ds_custom_url",'',true),
+            "tip" => [
+                "ds_status" => $this->systemSetting('ds_status', '0', true),
+                "ds_template" => $this->systemSetting('ds_template', 'org', true),
+                "ds_alipay_img" => $this->systemSetting('ds_alipay_img', '', true),
+                "ds_wx_img" => $this->systemSetting('ds_wx_img', '', true),
+                "ds_custom_url" => $this->systemSetting("ds_custom_url", '', true),
                 'ds_title' => $this->systemSetting('ds_title', '', true),
                 'ds_tips' => $this->systemSetting('ds_tips', '', true)
             ]
@@ -78,7 +77,11 @@ class Api extends BaseController
     {
         $info = SettingModel::Config("globalNotify", false);
         if ($info) {
-            return $this->success('ok', $info);
+            $info = json_decode($info, true);
+            $info['html'] = modifyImageUrls($info['html'], request()->root(true));
+            if (isset($info['status']) && $info['status'] == 1) {
+                return $this->success('ok', json_encode($info, JSON_UNESCAPED_UNICODE));
+            }
         }
         return $this->error('empty');
     }
@@ -165,7 +168,7 @@ class Api extends BaseController
 
     private function hasOnlyPath($url): bool
     {
-        if(!$url){
+        if (!$url) {
             return false;
         }
         $parsedUrl = parse_url($url);
@@ -176,99 +179,155 @@ class Api extends BaseController
         return false;
     }
 
-
     function getIcon(): \think\response\Json
     {
         $avatar = $this->request->post('avatar');
         if ($avatar) {
-            $remote_avatar = $this->systemSetting("remote_avatar", "https://avatar.mtab.cc/6.x/icons/png?seed=", true);
+            $remote_avatar = $this->systemSetting('remote_avatar', 'https://avatar.mtab.cc/6.x/icons/png?seed=', true);
             $str = $this->downloadFile($remote_avatar . $avatar, md5($avatar) . '.png');
             return $this->success(['src' => $str]);
         }
+
         $url = $this->request->post('url', false);
-        $icon = "";
+        if (!$url) {
+            return $this->error('没有抓取到图标');
+        }
+
+        $realUrl = $this->addHttpProtocolRemovePath($url);
         $cdn = $this->systemSetting('assets_host', '');
-        $title = "";
-        if ($url) {
-            $realUrl = $this->addHttpProtocolRemovePath($url);
+        $icon = '';
+        $title = '';
+
+        try {
             $client = \Axios::http();
-            try {
-                $response = $client->get($realUrl, [
-                    'headers' => [
-                        "User-Agent" => "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-                    ]
-                ]);
-                $status = $response->getStatusCode();
-            } catch (\Exception $e) {
-                return $this->error('无法连接远程目标服务器');
-            }
-            if ($status == 200) {
+            $response = $client->get($realUrl, [
+                'headers' => [
+                    'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                ]
+            ]);
+            $status = $response->getStatusCode();
+
+            if ($status === 200) {
+                $contentType = $response->getHeaderLine('Content-Type');
+                if (stripos($contentType, 'text/html') === false) {
+                    return $this->error('没有抓取到图标');
+                }
+
                 $body = $response->getBody()->getContents();
-                $dom = new Dom();
-                $dom->loadStr($body);
-                $titles = $dom->find('title');
-                if (count($titles) > 0) {
-                    $title = $titles->innerText;
+                $dom = new DOMDocument();
+                @$dom->loadHTML($body);
+
+                // 获取页面标题
+                $titles = $dom->getElementsByTagName('title');
+                if ($titles->length > 0) {
+                    $title = $titles->item(0)->textContent;
                 }
-                try {
-                    $list = $dom->find('[rel="icon"]');
-                    if (count($list) > 0) {
-                        $href = $list->href;
-                        if ($this->hasOnlyPath($href)) {
-                            if ($href[0] != '/') {
-                                $href = "/" . $href;
-                            }
-                            $href = $realUrl . $href;
-                        }
-                        $href = $this->addHttpProtocol($href);
-                        $icon = $href;
-                        $response = \Axios::http()->get($icon, [
-                            'headers' => [
-                                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-                            ]
-                        ]);
-                        $contentType = $response->getHeader('content-type');
-                        $contentType = $contentType[0];
-                        if (preg_match('/(png|jpg|jpeg|x-icon|svg\+xml)$/', $contentType, $matches)) {
-                            $contentType = array(
-                                'png' => 'png',
-                                'jpg' => 'jpg',
-                                'jpeg' => 'jpeg',
-                                'x-icon' => 'ico',
-                                'svg+xml' => 'svg',
-                            );
-                            $fileFormat = $matches[1];
-                            $icon = $this->downloadFile($icon, md5($realUrl) . '.' . $contentType[$fileFormat]);
-                            if ($icon) {
-                                $icon = $cdn . $icon;
-                            }
-                        } else {
-                            $icon = '';
-                        }
-                    }
-                } catch (\ErrorException $e) {
+
+                // 查找常见的图标类型
+                $iconTags = $this->findIcons($dom, $realUrl);
+
+                if (!empty($iconTags)) {
+                    // 处理第一个找到的图标
+                    $iconHref = $iconTags[0]['href'];
+                    $icon = $this->processIcon($iconHref, $realUrl, $cdn);
                 }
             }
-            if (strlen($icon) == 0) {
-                try {
-                    $client = \Axios::http();
-                    $response = $client->get($realUrl . '/favicon.ico');
-                    $status = $response->getStatusCode();
-                    if ($status == 200) {
-                        $icon = $realUrl . '/favicon.ico';
-                        $icon = $this->downloadFile($icon, md5($realUrl) . '.ico');
-                        if ($icon) {
-                            $icon = $cdn . $icon;
-                        }
-                    }
-                } catch (\Exception $e) {
-                }
+
+            // 如果没有找到图标或抓取失败，则尝试获取 favicon.ico
+            if (empty($icon)) {
+                $icon = $this->fetchFavicon($realUrl, $cdn);
             }
-            if (strlen($icon) > 0) {
+
+            if ($icon) {
                 return $this->success(['src' => $icon, 'name' => $title]);
             }
+
+        } catch (\Exception $e) {
+            return $this->error('没有抓取到图标');
         }
+
         return $this->error('没有抓取到图标');
+    }
+
+    private function findIcons($dom, $baseUrl): array
+    {
+        $icons = [];
+        $iconSelectors = [
+            'link[rel=icon]',
+            'link[rel=shortcut icon]',
+            'link[rel=apple-touch-icon]',
+            'link[rel=apple-touch-icon-precomposed]',
+            'link[rel=mask-icon]'
+        ];
+
+        foreach ($iconSelectors as $selector) {
+            foreach ($dom->getElementsByTagName('link') as $icon) {
+                if (in_array($icon->getAttribute('rel'), array_map('trim', $iconSelectors))) {
+                    $href = $icon->getAttribute('href');
+                    if ($this->hasOnlyPath($href)) {
+                        $href = rtrim($baseUrl, '/') . '/' . ltrim($href, '/');
+                    }
+                    $icons[] = ['href' => $href];
+                }
+            }
+        }
+
+        return $icons;
+    }
+
+    private function processIcon($iconHref, $realUrl, $cdn): string
+    {
+        try {
+            $client = \Axios::http();
+            $response = $client->get($iconHref, [
+                'headers' => [
+                    'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                ]
+            ]);
+            $contentType = $response->getHeaderLine('Content-Type');
+
+            // 根据 content-type 确定文件格式
+            if (preg_match('/(png|jpg|jpeg|x-icon|svg\+xml)$/i', $contentType, $matches)) {
+                $fileFormats = [
+                    'png' => 'png',
+                    'jpg' => 'jpg',
+                    'jpeg' => 'jpeg',
+                    'x-icon' => 'ico',
+                    'svg+xml' => 'svg',
+                ];
+                $fileFormat = strtolower($matches[1]);
+                $iconPath = $this->downloadFile($iconHref, md5($realUrl) . '.' . $fileFormats[$fileFormat]);
+                return $cdn . $iconPath;
+            }
+        } catch (\Exception $e) {
+            // 直接返回失败
+            return '';
+        }
+
+        return '';
+    }
+
+    private function fetchFavicon($realUrl, $cdn): string
+    {
+        try {
+            $client = \Axios::http();
+            $faviconUrl = rtrim($realUrl, '/') . '/favicon.ico';
+            $response = $client->get($faviconUrl, [
+                'headers' => [
+                    'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                ]
+            ]);
+            $status = $response->getStatusCode();
+            if ($status === 200) {
+                $iconPath = $this->downloadFile($faviconUrl, md5($realUrl) . '.ico');
+                return $cdn . $iconPath;
+            }
+        } catch (\Exception $e) {
+            // 直接返回失败
+            return '';
+        }
+
+        return '';
     }
 
     private function downloadFile($url, $name)
@@ -288,6 +347,18 @@ class Api extends BaseController
                     'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
                 ]
             ]);
+            $realPath = joinPath(public_path(), $path . $name);
+            $hash = hash_file('md5', $realPath);
+            $check = FileModel::where('hash', $hash)->find();
+            if ($check) {
+                try {
+                    if (joinPath(public_path(), $check['path']) !== $realPath) {
+                        unlink($realPath);
+                    }
+                } catch (\Exception $e) {
+                }
+                return $check['path'];
+            }
             FileModel::addFile($path . $name, $user['user_id'] ?? null);
             return $path . $name;
         } catch (RequestException $e) {
@@ -329,10 +400,21 @@ class Api extends BaseController
         if (in_array(strtolower($file->getOriginalExtension()), ['png', 'jpg', 'jpeg', 'webp', 'ico', 'svg'])) {
             // 验证文件并保存
             try {
+                $cdn = $this->systemSetting('assets_host', '/', true);
                 // 构建保存路径
                 $savePath = '/images/' . date('Y/m/d');
                 $hash = Str::random(32);
                 $fileName = $hash . '.' . $file->getOriginalExtension();
+                $hash = $file->hash('md5');
+                $check = FileModel::where('hash', $hash)->find();
+                if ($check) {
+                    try {
+                        unlink($file->getRealPath());
+                    } catch (\Exception $e) {
+                    }
+                    $dt = ['url' => joinPath($cdn, $check['path'])];
+                    return $this->success($dt);
+                }
                 $filePath = Filesystem::disk('images')->putFileAs($savePath, $file, $fileName);
                 $minPath = '';
                 if ($type == 'icon' || $type == 'avatar') {
@@ -346,7 +428,6 @@ class Api extends BaseController
                     $image->resize(400, 0)->save(joinPath(public_path(), $minPath));
                     FileModel::addFile($minPath, $user['user_id'] ?? null);
                 }
-                $cdn = $this->systemSetting('assets_host', '/', true);
                 FileModel::addFile($filePath, $user['user_id'] ?? null);
                 return $this->success(['url' => $cdn . $filePath, "minUrl" => joinPath($cdn, $minPath)]);
             } catch (\think\exception\ValidateException $e) {
@@ -365,8 +446,8 @@ class Api extends BaseController
         if (empty($file)) {
             return $this->error('not File');
         }
-        if ($file->getSize() > 1024 * 1024 * 5) {
-            return $this->error('max fileSize is 5M');
+        if ($file->getSize() > 1024 * 1024 * 8) {
+            return $this->error('文件最大8MB,请压缩后再试');
         }
         // 验证文件并保存
         try {

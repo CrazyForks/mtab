@@ -82,15 +82,6 @@ private static $installed = array (
       ),
       'reference' => 'ce0f4d1e8a6f4eb0ddff33f57c69c50fd09f4301',
     ),
-    'myclabs/php-enum' => 
-    array (
-      'pretty_version' => '1.8.4',
-      'version' => '1.8.4.0',
-      'aliases' => 
-      array (
-      ),
-      'reference' => 'a867478eae49c9f59ece437ae7f9506bfaa27483',
-    ),
     'nette/mail' => 
     array (
       'pretty_version' => 'v3.1.11',
@@ -108,42 +99,6 @@ private static $installed = array (
       array (
       ),
       'reference' => 'a4175c62652f2300c8017fb7e640f9ccb11648d2',
-    ),
-    'paquettg/php-html-parser' => 
-    array (
-      'pretty_version' => '3.1.1',
-      'version' => '3.1.1.0',
-      'aliases' => 
-      array (
-      ),
-      'reference' => '4e01a438ad5961cc2d7427eb9798d213c8a12629',
-    ),
-    'paquettg/string-encode' => 
-    array (
-      'pretty_version' => '1.0.1',
-      'version' => '1.0.1.0',
-      'aliases' => 
-      array (
-      ),
-      'reference' => 'a8708e9fac9d5ddfc8fc2aac6004e2cd05d80fee',
-    ),
-    'php-http/httplug' => 
-    array (
-      'pretty_version' => '2.4.0',
-      'version' => '2.4.0.0',
-      'aliases' => 
-      array (
-      ),
-      'reference' => '625ad742c360c8ac580fcc647a1541d29e257f67',
-    ),
-    'php-http/promise' => 
-    array (
-      'pretty_version' => '1.3.1',
-      'version' => '1.3.1.0',
-      'aliases' => 
-      array (
-      ),
-      'reference' => 'fc85b1fba37c169a69a07ef0d5a8075770cc1f83',
     ),
     'psr/container' => 
     array (
@@ -224,30 +179,30 @@ private static $installed = array (
     ),
     'symfony/polyfill-mbstring' => 
     array (
-      'pretty_version' => 'v1.30.0',
-      'version' => '1.30.0.0',
+      'pretty_version' => 'v1.31.0',
+      'version' => '1.31.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => 'fd22ab50000ef01661e2a31d850ebaa297f8e03c',
+      'reference' => '85181ba99b2345b0ef10ce42ecac37612d9fd341',
     ),
     'symfony/polyfill-php72' => 
     array (
-      'pretty_version' => 'v1.30.0',
-      'version' => '1.30.0.0',
+      'pretty_version' => 'v1.31.0',
+      'version' => '1.31.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '10112722600777e02d2745716b70c5db4ca70442',
+      'reference' => 'fa2ae56c44f03bed91a39bfc9822e31e7c5c38ce',
     ),
     'symfony/polyfill-php80' => 
     array (
-      'pretty_version' => 'v1.30.0',
-      'version' => '1.30.0.0',
+      'pretty_version' => 'v1.31.0',
+      'version' => '1.31.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '77fa7995ac1b21ab60769b7323d600a991a90433',
+      'reference' => '60328e362d4c2c802a54fcbf04f9d3fb892b4cf8',
     ),
     'symfony/var-dumper' => 
     array (

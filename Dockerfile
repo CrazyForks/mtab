@@ -14,12 +14,15 @@ COPY ./docker/php.ini /php.ini
 
 COPY . /www
 
+#ENV SYSTEM_TYPE='Synology'
+
 RUN chmod +x /install.sh && chmod +x /start.sh && /bin/sh /install.sh && rm /install.sh
 
 
 EXPOSE 80
 
 CMD ["/bin/bash","/start.sh"]
+
 
 #构建全平台 docker buildx create --name mybuilder --driver docker-container --use
 #构建全平台 docker buildx build --no-cache --platform linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6,linux/amd64/v3 -t itushan/mtab --push .

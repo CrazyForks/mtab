@@ -38,6 +38,7 @@ class UserModel extends Model
             if ($user) {
                 $status = self::where('id', $user['user_id'])->find();
                 if ($status && $status['status'] === 0) {
+                    $user['group_id'] = $status['group_id'];
                     if (time() > ($user['create_time'] + 60 * 60 * 24 * 15)) {//如果创建时间大于15天则删除
                         $user->delete();
                     } else {

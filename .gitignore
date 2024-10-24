@@ -16,3 +16,4 @@ public/installed.lock
 mtab.zip
 /public/dist/
 /public/static/exportsTabLink.json
+/vendor

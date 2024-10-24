@@ -1,4 +1,5 @@
 <?php
+set_time_limit(600);//默认十分钟的超时
 function params($key, $default_value = '')
 {
     return $_POST[$key] ?? $default_value;
@@ -346,7 +347,7 @@ EOF;
             使用已存在数据库（不会覆盖数据库，仅安装代码，注意的是数据库的数据表要和最新版本的程序的库一致，否则使用旧版本的数据库表<b
                     style="color: red">却</b>安装最新版的代码，否则导致有些服务异常）
         </label>
-        <input type='submit' value='安装' style="margin-top: 30px">
+        <input type='submit' value='安装（点击后请耐心等待安装完成）' style="margin-top: 30px">
         <div style='margin-top: 30px;font-size: 14px;line-height: 24px;display: flex;flex-direction: column;align-items: center;text-align: center'>
             <b style="font-size: 18px">温馨提示</b>如果您在安装阶段出现问题或对安装方式（特别是Nas部署用户）不知如何操作，可联系我们为您提供解决方法或辅助您安装，本服务不收费
             <a target='_blank'

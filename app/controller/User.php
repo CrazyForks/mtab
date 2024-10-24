@@ -5,10 +5,13 @@ namespace app\controller;
 
 use app\BaseController;
 use app\model\ConfigModel;
+use app\model\LinkFolderModel;
 use app\model\SettingModel;
 use app\model\TokenModel;
+use app\model\UserGroupModel;
 use app\model\UserModel;
 use think\facade\Cache;
+use think\facade\Db;
 use think\facade\Log;
 use think\facade\View;
 
@@ -182,7 +185,7 @@ class User extends BaseController
                 $info['qqBind'] = true;
                 unset($info['qq_open_id']);
             }
-            if($info['active']!==date("Y-m-d")){
+            if ($info['active'] !== date("Y-m-d")) {
                 $info['active'] = date("Y-m-d");
                 $info->save();
             }
@@ -341,5 +344,47 @@ class User extends BaseController
                 UserModel::where('qq_open_id', $openid)->update(['nickname' => $js['nickname'], 'avatar' => $js['figureurl_qq_1']]);
             }
         }
+    }
+
+    function UserGroup(): \think\response\Json
+    {
+        is_demo_mode(true);
+        $this->getAdmin();
+        return $this->success("ok", UserGroupModel::order("sort", 'desc')->select()->toArray());
+    }
+
+    function createGroup(): \think\response\Json
+    {
+        is_demo_mode(true);
+        $type = $this->request->post('type', false);
+        $this->getAdmin();
+        if ($type === 'edit') {
+            $form = $this->request->post('info');
+            $id = $this->request->post('info.id', false);
+            if ($id && $id > 0) {
+                $model = UserGroupModel::find($id);
+                $model->update($form);
+            } else {
+                $model = new UserGroupModel();
+                $model->insert($form);
+            }
+        } else if ($type === 'del') {
+            $id = $this->request->post('id');
+            $result = UserGroupModel::where('id', $id)->find();
+            if ($result) {
+                $result->delete();
+                UserModel::where('group_id', $id)->update(['group_id' => 0]);
+            }
+        }
+        return $this->success('处理完毕！');
+    }
+
+    function sortGroup(): \think\response\Json
+    {
+        $sort = (array)$this->request->post();
+        foreach ($sort as $key => $value) {
+            UserGroupModel::where('id', $value['id'])->update(['sort' => $value['sort']]);
+        }
+        return $this->success('ok');
     }
 }

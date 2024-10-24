@@ -91,6 +91,7 @@ class File extends BaseController
                 $info['user_id'] = null;
                 $info['create_time'] = date('Y-m-d H:i:s');
                 $info['size'] = filesize($p) ?? 0;
+                $info['hash'] = hash_file("md5", $p);
                 $info['mime_type'] = mime_content_type($p) ?? 'null';
                 $all[] = $info;
             }

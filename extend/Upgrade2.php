@@ -1,6 +1,7 @@
 <?php
 ini_set('max_execution_time', 0);
 ini_set('memory_limit', '500M');
+
 class Upgrade2
 {
     protected string $archiveFile = "";//升级文件地址
@@ -9,6 +10,7 @@ class Upgrade2
     public string $update_download_url = "";//升级zip文件下载地址
     public string $update_sql_url = "";//升级sql脚本文件地址
     public string $update_script = "";//升级后执行的脚本地址
+    protected bool $isLog = false;
 
     //构造方法初始化一些数据
     function __construct($update_download_url = null, $update_sql_url = null, $update_script = null)
@@ -28,41 +30,59 @@ class Upgrade2
     }
 
     //运行入口
-    function run(): bool
+    function run($cli = false): bool
     {
+        if ($cli) {
+            $this->isLog = true;
+        }
         return $this->startUpgrade();
     }
 
+    public function log($msg)
+    {
+        if ($this->isLog) {
+            print_r($msg . "\n");
+        }
+    }
+
     //新的进程启动升级
-    private function startUpgrade()
+    private function startUpgrade(): bool
     {
         //如果有程序代码的更新资源则更新程序代码
         if (strlen($this->update_download_url) > 1) {
             //如果有遗留的解压资源则删除
+            $this->log("正在检查是否有旧版本的安装包，并删除。");
             $this->deleteDirectory("{$this->extractPath}mtab");
             //如果存在旧的升级包则删除
             $this->delZip();
             //下载远程更新包
-            if(!$this->fileDownload()){
+            $this->log("正在下载升级包...");
+            if (!$this->fileDownload()) {
+                $this->log('资源下载失败');
                 abort(0, '资源下载失败');
             }
             //解压升级包
+            $this->log("正在解压升级包...");
             if (!$this->unzip($this->archiveFile, $this->extractPath)) {
                 $this->delZip();
                 abort(0, '升级资源包解压失败');
             }
-            $this->deleteDirectory(public_path().'dist/');//删除旧的网站文件
+            $this->log("正在更新程序...");
+            $this->deleteDirectory(public_path() . 'dist/');//删除旧的网站文件
             //拷贝覆盖
             $this->copy();
             //删除下载的更新包
+            $this->log("正在删除升级包...");
             $this->delZip();
             //更新完后的一些操作
         }
         //如果有数据库的更新资源则更新程序代码
         if (strlen($this->update_sql_url) > 1) {
+            $this->log("正在更新数据库...");
             $this->updateSql();
         }
         if (file_exists("{$this->root_path}install.sql")) {
+            $this->log("正在更新数据库...");
             $this->updateSql("{$this->root_path}install.sql");
         }
         //退出
@@ -71,19 +91,50 @@ class Upgrade2
 
     private function fileDownload(): bool
     {
+        $length = 0;
         try {
             $f = fopen($this->update_download_url, 'r');
             $w = fopen($this->archiveFile, 'wb+');
+            $fileSize = $this->getFileSize($this->update_download_url);
             do {
-                $a = fread($f, 1024);
+                $a = fread($f, 1024 * 64);
+                $length += strlen($a);
                 fwrite($w, $a);
+                // 计算下载进度
+                $progress = ($fileSize > 0) ? round($length / $fileSize * 100, 2) : 0;
+                // 打印进度条，在一行内更新
+                if ($this->isLog) {
+                    if ($progress <= 100) {
+                        $this->printProgress((int)$progress);
+                    }
+                }
             } while ($a);
             fclose($w);
             fclose($f);
+            $this->log("\n下载完成");
         } catch (ErrorException $e) {
             return false;
         }
         return true;
+    }
+
+    private function printProgress(float $progress)
+    {
+        try {
+            $barLength = 50; // 进度条的总长度
+            $completed = round($progress / 100 * $barLength); // 完成的部分
+            $bar = str_repeat('=', $completed) . str_repeat(' ', max($barLength - $completed, 0)); // 拼接进度条
+            echo "\r[" . $bar . "] " . $progress . "%";
+        } catch (Exception $e) {
+
+        }
+    }
+
+    private function getFileSize(string $url): int
+    {
+        // 使用 HEAD 请求获取文件大小
+        $headers = get_headers($url, 1);
+        return isset($headers['Content-Length']) ? (int)$headers['Content-Length'] : 0;
     }
 
     //删除升级包
@@ -108,11 +159,11 @@ class Upgrade2
     }
 
     //升级的数据库
-    function updateSql($path=null)
+    function updateSql($path = null)
     {
-        if($path){
+        if ($path) {
             $f = fopen($path, 'r');
-        }else{
+        } else {
             $f = fopen($this->update_sql_url, 'r');
         }
         $sql = "";

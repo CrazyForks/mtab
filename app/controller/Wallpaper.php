@@ -9,7 +9,7 @@ use app\model\WallpaperModel;
 class Wallpaper extends BaseController
 {
 
-    function editFolder()
+    function editFolder(): \think\response\Json
     {
         $this->getAdmin();
         is_demo_mode(true);
@@ -25,7 +25,8 @@ class Wallpaper extends BaseController
         $list = WallpaperModel::where("type", 1)->field("id,name,type,sort,create_time")->order("sort")->select();
         return $this->success("处理完毕", $list);
     }
-    function DelFolder()
+
+    function DelFolder(): \think\response\Json
     {
         $this->getAdmin();
         $id = $this->request->post("id");
@@ -58,17 +59,20 @@ class Wallpaper extends BaseController
         $list = WallpaperModel::where("type", 1)->field("id,name,type,sort,create_time")->order("sort")->select();
         return $this->success("ok", $list);
     }
-    function getFolder()
+
+    function getFolder(): \think\response\Json
     {
         $this->getAdmin();
         $list = WallpaperModel::where("type", 1)->field("id,name,type,sort,create_time")->order("sort")->select();
         return $this->success("ok", $list);
     }
-    function getFolderClient()
+
+    function getFolderClient(): \think\response\Json
     {
         $list = WallpaperModel::where("type", 1)->field("id,name,type,sort,create_time")->order("sort")->select();
         return $this->success("ok", $list);
     }
+
     function getFolderWallpaper()
     {
         $this->getAdmin();
@@ -78,6 +82,7 @@ class Wallpaper extends BaseController
             return $this->success("ok", $list);
         }
     }
+
     function getFolderWallpaperClient()
     {
         $folder_id = $this->request->post("id");
@@ -87,6 +92,7 @@ class Wallpaper extends BaseController
             return $this->success("ok", $list);
         }
     }
+
     function deleteWallpaper()
     {
         $this->getAdmin();
@@ -114,7 +120,8 @@ class Wallpaper extends BaseController
             return $this->success("ok");
         }
     }
-    function addWallpaper()
+
+    function addWallpaper(): \think\response\Json
     {
         $this->getAdmin();
         $data = [];
@@ -124,17 +131,26 @@ class Wallpaper extends BaseController
         $data['mime'] = $this->request->post("mime");
         $data['folder'] = $this->request->post("folder");
         $id = $this->request->post("id");
-        if($id){
+        if ($id) {
             $res = WallpaperModel::where("id", $id)->find();
-            if($res){
+            if ($res) {
                 $res->save($data);
             }
-        }else{
+        } else {
             $res = WallpaperModel::create($data);
         }
         return $this->success("ok", $res);
     }
-    function sortFolder()
+
+    function randomWallpaper(): \think\response\Json
+    {
+        $list = WallpaperModel::where("type",0)->field('id, mime, url')
+            ->orderRaw('RAND()')
+            ->find();
+        return $this->success("ok", $list);
+    }
+
+    function sortFolder(): \think\response\Json
     {
         $this->getAdmin();
         $sort = (array)$this->request->post();

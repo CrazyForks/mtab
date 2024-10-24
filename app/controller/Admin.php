@@ -4,7 +4,6 @@ namespace app\controller;
 
 use app\BaseController;
 use app\command\repair;
-use app\command\util;
 use app\model\ConfigModel;
 use app\model\FileModel;
 use app\model\HistoryModel;
@@ -30,12 +29,19 @@ class Admin extends BaseController
         $this->getAdmin();
         $limit = $this->request->all('limit', 50);
         $search = $this->request->post('search');
+        $group = $this->request->post('search.group_id', -1);
         $sql = [];
         if (isset($search['mail']) && mb_strlen($search['mail']) > 0) {
             $sql[] = ['mail', 'like', "%$search[mail]%"];
         }
         if (isset($search['nickname']) && mb_strlen($search['nickname']) > 0) {
-            $sql[] = ["nickname","like","%$search[nickname]%"];
+            $sql[] = ["nickname", "like", "%$search[nickname]%"];
+        }
+        if (isset($search['status']) && $search['status'] >= 0) {
+            $sql[] = ['status', '=', $search['status']];
+        }
+        if (is_numeric($group) && $group >= 0) {
+            $sql['group_id'] = $search['group_id'];
         }
         $user = UserModel::where($sql)->withoutField('password')->order($this->request->post('sort.prop', 'id'), $this->request->post('sort.order', 'desc'))->paginate($limit);
         return $this->success('ok', $user);
@@ -127,22 +133,25 @@ class Admin extends BaseController
 
         return $fileCount;
     }
+
     function xyCheck(): \think\response\Json
     {
         $this->getAdmin();
-        if(is_file(root_path() . 'xy.pem')){
-            if(file_get_contents(root_path().'xy.pem')===file_get_contents(config_path().'LICENSE.html')){
+        if (is_file(root_path() . 'xy.pem')) {
+            if (file_get_contents(root_path() . 'xy.pem') === file_get_contents(config_path() . 'LICENSE.html')) {
                 return $this->success("ok");
             }
         }
-        return $this->error("未找到证书文件",['license'=>file_get_contents(config_path().'LICENSE.html')]);
+        return $this->error("未找到证书文件", ['license' => file_get_contents(config_path() . 'LICENSE.html')]);
     }
+
     function xy(): \think\response\Json
     {
         $this->getAdmin();
-        file_put_contents(root_path()."xy.pem", file_get_contents(config_path().'LICENSE.html'));
+        file_put_contents(root_path() . "xy.pem", file_get_contents(config_path() . 'LICENSE.html'));
         return $this->success("ok");
     }
+
     function getServicesStatus(): \think\response\Json
     {
         $this->getAdmin();
@@ -155,10 +164,10 @@ class Admin extends BaseController
             $userWeekActive = Cache::get('userWeekActive');
         } else {
             $start = date('Y-m-d', strtotime('-7 days'));
-            $userWeekActive = UserModel::where('active',">", $start)->field("id,active")->count('id');
+            $userWeekActive = UserModel::where('active', ">", $start)->field("id,active")->count('id');
             Cache::set('userWeekActive', $userWeekActive, 60);
         }
-        return $this->success('ok', ['userNum' => $userNum, 'linkNum' => $linkNum, 'redisNum' => $redisNum, 'fileNum' => $fileNum,"userWeekActive"=>$userWeekActive]);
+        return $this->success('ok', ['userNum' => $userNum, 'linkNum' => $linkNum, 'redisNum' => $redisNum, 'fileNum' => $fileNum, "userWeekActive" => $userWeekActive]);
     }
 
     function getUserLine(): \think\response\Json

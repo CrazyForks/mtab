@@ -7,7 +7,7 @@ use think\View;
 
 class PluginsBase extends BaseController
 {
-    public ?View $view = null;
+    public  $view = null;
     function __construct(App $app)
     {
         parent::__construct($app);

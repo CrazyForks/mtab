@@ -4,7 +4,8 @@ create table if not exists card
 (
     id int auto_increment
         primary key
-) character set  utf8mb4 collate utf8mb4_general_ci comment '卡片数据表';
+) character set utf8mb4
+  collate utf8mb4_general_ci comment '卡片数据表';
 
 
 alter table card
@@ -46,13 +47,20 @@ alter table card
 alter table card
     add dict_option longtext null comment '配置的参数';
 
+alter table card
+    add constraint card_pk
+        unique (name_en);
+
+create index card_name_en_index
+    on card (name_en);
 
 #创建config数据表
 
 create table if not exists config
 (
     user_id int null
-) character set  utf8mb4 collate utf8mb4_general_ci comment '用户配置数据表';
+) character set utf8mb4
+  collate utf8mb4_general_ci comment '用户配置数据表';
 
 create index config_user_id_index
     on config (user_id);
@@ -66,7 +74,8 @@ create table if not exists file
 (
     id bigint auto_increment
         primary key
-) character set  utf8mb4 collate utf8mb4_general_ci comment '文件';
+) character set utf8mb4
+  collate utf8mb4_general_ci comment '文件';
 
 alter table file
     add path varchar(255) null;
@@ -83,6 +92,8 @@ alter table file
 alter table file
     add mime_type varchar(100) null comment '文件类型';
 
+alter table file
+    add hash varchar(100) null comment '文件哈希';
 
 
 #创建history数据表
@@ -94,7 +105,8 @@ create table if not exists history
 
     constraint history_id_uindex
         unique (id)
-)  character set  utf8mb4 collate utf8mb4_general_ci comment 'link历史数据';
+) character set utf8mb4
+  collate utf8mb4_general_ci comment 'link历史数据';
 
 alter table history
     add user_id int null;
@@ -111,7 +123,8 @@ alter table history
 create table if not exists link
 (
     user_id int null
-) character set  utf8mb4 collate utf8mb4_general_ci;
+) character set utf8mb4
+  collate utf8mb4_general_ci;
 
 create index link_user_id_index
     on link (user_id);
@@ -130,7 +143,8 @@ create table if not exists link_folder
 (
     id int auto_increment comment 'id'
         primary key
-) character set  utf8mb4 collate utf8mb4_general_ci comment '标签链接分类';
+) character set utf8mb4
+  collate utf8mb4_general_ci comment '标签链接分类';
 
 alter table link_folder
     add name varchar(50) null comment '分类名称';
@@ -138,6 +152,8 @@ alter table link_folder
 alter table link_folder
     add sort int default 0 null;
 
+alter table link_folder
+    add group_ids varchar(200) default '0' null comment '可见用户分组';
 
 #创建link_store数据表
 
@@ -147,7 +163,8 @@ create table if not exists linkstore
         primary key,
     constraint linkStore_id_uindex
         unique (id)
-)  character set  utf8mb4 collate utf8mb4_general_ci;
+) character set utf8mb4
+  collate utf8mb4_general_ci;
 
 alter table linkstore
     add name varchar(255) null;
@@ -200,7 +217,8 @@ alter table linkstore
 alter table linkstore
     add status int default 1 null comment '状态 1=展示 0=待审核';
 
-
+alter table linkstore
+    add group_ids varchar(200) default '0' null comment '可见用户分组';
 
 
 #创建note数据表
@@ -211,7 +229,8 @@ create table if not exists note
         primary key,
     constraint note_id_uindex
         unique (id)
-)  character set  utf8mb4 collate utf8mb4_general_ci;
+) character set utf8mb4
+  collate utf8mb4_general_ci;
 
 alter table note
     add user_id bigint null;
@@ -240,7 +259,8 @@ create table if not exists search_engine
 (
     id int auto_increment
         primary key
-) character set  utf8mb4 collate utf8mb4_general_ci comment '搜索引擎';
+) character set utf8mb4
+  collate utf8mb4_general_ci comment '搜索引擎';
 
 alter table search_engine
     add name varchar(50) null comment '名称';
@@ -270,7 +290,8 @@ create table if not exists setting
 (
     `keys` varchar(200) not null
         primary key
-) character set  utf8mb4 collate utf8mb4_general_ci;
+) character set utf8mb4
+  collate utf8mb4_general_ci;
 
 alter table setting
     add value text null;
@@ -280,7 +301,8 @@ alter table setting
 create table if not exists tabbar
 (
     user_id int null
-) character set  utf8mb4 collate utf8mb4_general_ci comment '用户页脚信息';
+) character set utf8mb4
+  collate utf8mb4_general_ci comment '用户页脚信息';
 
 alter table tabbar
     add tabs longtext null;
@@ -296,7 +318,8 @@ create table if not exists token
         primary key,
     constraint token_id_uindex
         unique (id)
-) character set  utf8mb4 collate utf8mb4_general_ci;
+) character set utf8mb4
+  collate utf8mb4_general_ci;
 
 alter table token
     add user_id int null;
@@ -325,7 +348,8 @@ create table if not exists user
         primary key,
     constraint user_id_uindex
         unique (id)
-) character set  utf8mb4 collate utf8mb4_general_ci;
+) character set utf8mb4
+  collate utf8mb4_general_ci;
 
 alter table user
     add avatar varchar(255) null comment '头像';
@@ -366,6 +390,19 @@ alter table user
 alter table user
     add active date null comment '今日是否活跃';
 
+alter table user
+    add group_id bigint default 0 null;
+
+alter table user
+    add constraint user_pk
+        unique (mail);
+
+alter table user
+    add constraint user_pk_2
+        unique (qq_open_id);
+
+
+
 #创建user_search_engine表
 
 create table if not exists user_search_engine
@@ -374,7 +411,8 @@ create table if not exists user_search_engine
         primary key,
     constraint user_search_engine_pk
         unique (user_id)
-) character set  utf8mb4 collate utf8mb4_general_ci comment '用户搜索引擎同步表';
+) character set utf8mb4
+  collate utf8mb4_general_ci comment '用户搜索引擎同步表';
 
 alter table user_search_engine
     add list longtext null;
@@ -386,7 +424,8 @@ create table if not exists wallpaper
 (
     id int auto_increment
         primary key
-) character set  utf8mb4 collate utf8mb4_general_ci;
+) character set utf8mb4
+  collate utf8mb4_general_ci;
 
 alter table wallpaper
     add type int null comment '1=folder；0=assets';
@@ -412,4 +451,112 @@ alter table wallpaper
 alter table wallpaper
     add sort int default 999 null;
 
+
+create table user_group
+(
+    id bigint auto_increment comment '自增ID',
+    constraint user_group_pk
+        primary key (id)
+)
+    comment '用户分组';
+
+alter table user_group
+    add name varchar(50) not null comment '分组名称';
+
+alter table user_group
+    add create_time datetime null comment '创建时间';
+
+alter table user_group
+    add sort int default 0 null comment '排序';
+
+
 ##创建结束
+
+
+##卡片组件安装部分
+
+# 创建待办内容数据表
+
+create table if not exists plugins_todo
+(
+    id int auto_increment
+        primary key
+) comment '待办事项';
+
+
+alter table plugins_todo
+    add status int default 0 null comment '状态1=完成，0=未完成';
+
+alter table plugins_todo
+    add user_id int null;
+
+alter table plugins_todo
+    add create_time datetime null;
+
+alter table plugins_todo
+    add expire_time datetime null;
+
+alter table plugins_todo
+    add todo text(1000) null;
+
+alter table plugins_todo
+    add weight int null comment '重要程度 1-6 颜色划分';
+
+alter table plugins_todo
+    add folder varchar(20) null comment 'today=今天；week=最近七天；其他正常';
+
+create index plugins_todo_user_id_index
+    on plugins_todo (user_id);
+
+# 创建待办文件夹数据表
+
+create table if not exists plugins_todo_folder
+(
+    id int auto_increment,
+    primary key (id)
+) comment 'todo分类';
+
+alter table plugins_todo_folder
+    add column user_id int null comment '用户';
+
+alter table plugins_todo_folder
+    add column name varchar(30) null;
+
+alter table plugins_todo_folder
+    add column create_time datetime null;
+
+create index plugins_todo_folder_user_id_index
+    on plugins_todo_folder (user_id);
+
+
+INSERT INTO card (name, name_en, version, tips, src, url, `window`)
+VALUES ('今天吃什么', 'food', 3, '吃什么是个很麻烦的事情', '/plugins/food/static/ico.png', '/plugins/food/card', '/plugins/food/window')
+ON DUPLICATE KEY UPDATE name = VALUES(name), version = VALUES(version), tips = VALUES(tips), src = VALUES(src), url = VALUES(url), `window` = VALUES(`window`);
+
+INSERT INTO card (name, name_en, version, tips, src, url, `window`)
+VALUES ('天气', 'weather', 13, '获取您所在地的实时天气！', '/plugins/weather/static/ico.png', '/plugins/weather/card', '/plugins/weather/window')
+ON DUPLICATE KEY UPDATE name = VALUES(name), version = VALUES(version), tips = VALUES(tips), src = VALUES(src), url = VALUES(url), `window` = VALUES(`window`);
+
+INSERT INTO card (name, name_en, version, tips, src, url, `window`)
+VALUES ('电子木鱼', 'muyu', 5, '木鱼一敲 烦恼丢掉', '/plugins/muyu/static/ico.png', '/plugins/muyu/card', '/plugins/muyu/window')
+ON DUPLICATE KEY UPDATE name = VALUES(name), version = VALUES(version), tips = VALUES(tips), src = VALUES(src), url = VALUES(url), `window` = VALUES(`window`);
+
+INSERT INTO card (name, name_en, version, tips, src, url, `window`)
+VALUES ('热搜', 'topSearch', 15, '聚合百度，哔站，微博，知乎，头条等热搜！', '/plugins/topSearch/static/ico.png', '/plugins/topSearch/card', '/plugins/topSearch/window')
+ON DUPLICATE KEY UPDATE name = VALUES(name), version = VALUES(version), tips = VALUES(tips), src = VALUES(src), url = VALUES(url), `window` = VALUES(`window`);
+
+INSERT INTO card (name, name_en, version, tips, src, url, `window`)
+VALUES ('记事本', 'noteApp', 15, '快捷记录您的灵感', '/plugins/noteApp/static/ico.png', '/plugins/noteApp/card', '/noteApp')
+ON DUPLICATE KEY UPDATE name = VALUES(name), version = VALUES(version), tips = VALUES(tips), src = VALUES(src), url = VALUES(url), `window` = VALUES(`window`);
+
+INSERT INTO card (name, name_en, version, tips, src, url, `window`)
+VALUES ('每日诗词', 'poetry', 8, '精选每日诗词！', '/plugins/poetry/static/ico.png', '/plugins/poetry/card', '/plugins/poetry/window')
+ON DUPLICATE KEY UPDATE name = VALUES(name), version = VALUES(version), tips = VALUES(tips), src = VALUES(src), url = VALUES(url), `window` = VALUES(`window`);
+
+INSERT INTO card (name, name_en, version, tips, src, url, `window`)
+VALUES ('日历', 'calendar', 1, '日历', '/plugins/calendar/static/ico.png', '/plugins/calendar/card', '/plugins/calendar/window')
+ON DUPLICATE KEY UPDATE name = VALUES(name), version = VALUES(version), tips = VALUES(tips), src = VALUES(src), url = VALUES(url), `window` = VALUES(`window`);
+
+INSERT INTO card (name, name_en, version, tips, src, url, `window`)
+VALUES ('待办事项', 'todo', 8, '快捷添加待办事项', '/plugins/todo/static/ico.png', '/plugins/todo/card', '/plugins/todo/window')
+ON DUPLICATE KEY UPDATE name = VALUES(name), version = VALUES(version), tips = VALUES(tips), src = VALUES(src), url = VALUES(url), `window` = VALUES(`window`);

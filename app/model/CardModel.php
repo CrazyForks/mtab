@@ -12,13 +12,13 @@ class CardModel extends Model
 {
     protected $name = "card";
     protected $pk = "id";
-    static array $stopCard = [];
+    static $stopCard = [];
 
     public static function cardStatus($name_en = ''): bool
     {
         $config = self::$stopCard;
         if (count($config) == 0) {
-            $config = self::cache('cardList', 60 * 60)->select()->toArray();
+            $config = self::select()->toArray();
             self::$stopCard = $config;
         }
         foreach ($config as $item) {
@@ -35,7 +35,7 @@ class CardModel extends Model
     {
         $config = self::$stopCard;
         if (count($config) == 0) {
-            $config = self::cache('cardList', 60 * 60)->select()->toArray();
+            $config = self::select()->toArray();
             self::$stopCard = $config;
         }
         foreach ($config as $item) {

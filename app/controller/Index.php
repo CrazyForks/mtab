@@ -3,6 +3,7 @@
 namespace app\controller;
 
 use app\BaseController;
+use app\model\CardModel;
 use app\model\SettingModel;
 use Cassandra\Set;
 use think\facade\View;
@@ -26,7 +27,7 @@ class Index extends BaseController
         return View::fetch("dist/index.html");
     }
 
-    function all()
+    function all(): \think\response\Json
     {
         $app = app();
         $ids = $this->request->post("ids", []);
@@ -40,6 +41,8 @@ class Index extends BaseController
         if (!in_array("config", $ids)) {
             $dt['config'] = (new Config($app))->get()->getData()['data'];
         }
+        $card = CardModel::where("status", 1)->field('name_en,status')->select()->toArray();
+        $dt['card'] = $card;
         $dt['site'] = (new Api($app))->site()->getData()['data'];
         return $this->success("ok", $dt);
     }

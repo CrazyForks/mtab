@@ -101,7 +101,7 @@ class Note extends BaseController
             'weight' => $this->request->post('weight', 0),
             "update_time" => date("Y-m-d H:i:s"),
         );
-        $status = (new \app\model\NoteModel)->where("id", $id)->where('user_id', $user['user_id'])->update($data);
+        $status = (new \app\model\NoteModel)->where("id", $id)->where('user_id', $user['user_id'])->find()->save($data);
         if ($status) {
             $data['id'] = $id;
             return $this->success("修改", $data);

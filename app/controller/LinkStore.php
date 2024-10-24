@@ -14,21 +14,35 @@ class LinkStore extends BaseController
 
     public function list(): \think\response\Json
     {
+        $user = $this->getUser();
         $limit = $this->request->post('limit', 12);
         $name = $this->request->post('name', false);
         $area = $this->request->post('area', false);
         $sql = [];
         if ($name) {
-            $sql[] = ['name|tips|url', 'like', "%" . $name . "%"];
+            $sql[] = ['name|tips|url', 'like', '%' . $name . '%'];
         }
+
         $list = LinkStoreModel::where($sql)->where('status', 1)->withoutField('user_id');
-        //area需要使用find_in_set来匹配
+
+        // 使用 find_in_set 匹配 area
         if ($area && $area != 0) {
-            $list = $list->whereRaw("find_in_set(?,area)",[$area]);
+            $list = $list->whereRaw('find_in_set(?,area)', [$area]);
         }
-        $list = $list->order(["hot" => 'desc', "create_time" => 'desc'])->paginate($limit);
+
+        // 将两个 whereOrRaw 条件组合在一起
+        $list = $list->where(function ($query) use ($user) {
+            $query->whereRaw('find_in_set(0,group_ids)');
+            if ($user) {
+                $query->whereOrRaw('find_in_set(?,group_ids)', [$user['group_id']]);
+            }
+        });
+
+        $list = $list->order(['hot' => 'desc', 'create_time' => 'desc'])->paginate($limit);
+
         return $this->success('ok', $list);
     }
+
 
     public function ListManager(): \think\response\Json
     {
@@ -36,6 +50,7 @@ class LinkStore extends BaseController
         $limit = $this->request->post('limit', 15);
         $name = $this->request->post('search.name', false);
         $area = $this->request->post('search.area', false);
+        $group_id = $this->request->post('search.group_id',false);
         $sql = [];
         if ($name) {
             $sql[] = ['name|tips', 'like', '%' . $name . '%'];
@@ -43,7 +58,10 @@ class LinkStore extends BaseController
         $list = LinkStoreModel::with(['userInfo'])->where($sql);
         //area需要使用find_in_set来匹配
         if ($area && $area != '全部') {
-            $list = $list->whereRaw("find_in_set(?,area)",[$area]);
+            $list = $list->whereRaw("find_in_set(?,area)", [$area]);
+        }
+        if($group_id){
+            $list = $list->whereRaw('find_in_set(?,group_ids)', [$group_id]);
         }
         $list = $list->order($this->request->post('sort.prop', 'id'), $this->request->post('sort.order', 'asc'))->paginate($limit);
         return json(["msg" => "ok", 'data' => $list, 'auth' => $this->auth]);
@@ -51,7 +69,20 @@ class LinkStore extends BaseController
 
     function getFolder(): \think\response\Json
     {
-        return $this->success("ok", LinkFolderModel::order("sort", "desc")->select());
+        $user = $this->getUser();
+        $list = new LinkFolderModel();
+        $list = $list->whereOrRaw("find_in_set(0,group_ids)");
+        if ($user&&(int)$user['group_id'] != 0) {
+            $list = $list->whereOrRaw('find_in_set(?,group_ids)', [$user['group_id']]);
+        }
+        return $this->success("ok", $list->order('sort', 'desc')->select());
+    }
+
+    function getFolderAdmin(): \think\response\Json
+    {
+        $user = $this->getAdmin();
+        $list = new LinkFolderModel();
+        return $this->success('ok', $list->order('sort', 'desc')->select());
     }
 
     private function update(): \think\response\Json
@@ -64,7 +95,8 @@ class LinkStore extends BaseController
         } catch (\Exception $exception) {
 
         }
-        $info = LinkStoreModel::where("id", $data['id'])->withoutField(['userInfo'])->update($data);
+        $info = LinkStoreModel::where("id", $data['id'])->withoutField(['userInfo'])->find();
+        $info->update($data);
         return $this->success('修改成功', $info);
     }
 
@@ -163,7 +195,7 @@ class LinkStore extends BaseController
                 return $this->update();
             } else {
                 $data['create_time'] = date("Y-m-d H:i:s");
-                $info = (new \app\model\LinkStoreModel)->insert($data);
+                $info = (new \app\model\LinkStoreModel)->create($data);
                 return $this->success('添加成功', $info);
             }
         }
@@ -182,7 +214,7 @@ class LinkStore extends BaseController
                 $url = parse_url($url);
                 $url = $url['host'];
             }
-            $data = LinkStoreModel::whereRaw("FIND_IN_SET(?,domain)",[$url])->find();
+            $data = LinkStoreModel::whereRaw("FIND_IN_SET(?,domain)", [$url])->find();
             if ($data) {
                 return $this->success('ok', $data);
             }
@@ -214,7 +246,7 @@ class LinkStore extends BaseController
                 $model->update($form);
             } else {
                 $model = new LinkFolderModel();
-                $model->insert($form);
+                $model->create($form);
             }
         } else if ($type === 'del') {
             $id = $this->request->post('id');
@@ -225,12 +257,20 @@ class LinkStore extends BaseController
                     "UPDATE linkstore
                      SET area = TRIM(BOTH ',' FROM REPLACE(CONCAT(',', area, ','), ',$id,', ','))
                      WHERE FIND_IN_SET(?, area) > 0;"
-                ,[$id]);
+                    , [$id]);
             }
         }
         return $this->success('处理完毕！');
     }
-
+    function moveGroup(): \think\response\Json
+    {
+        is_demo_mode(true);
+        $this->getAdmin();
+        $ids = $this->request->post('link', []);
+        $group_ids = $this->request->post('group_ids', '');
+        LinkStoreModel::where('id', 'in', $ids)->update(['group_ids' => $group_ids]);
+        return $this->success('处理完毕！');
+    }
     function moveFolder(): \think\response\Json
     {
         is_demo_mode(true);
@@ -241,7 +281,7 @@ class LinkStore extends BaseController
         return $this->success('处理完毕！');
     }
 
-    function sortFolder()
+    function sortFolder(): \think\response\Json
     {
         $sort = (array)$this->request->post();
         foreach ($sort as $key => $value) {

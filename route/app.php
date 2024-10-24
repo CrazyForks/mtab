@@ -12,7 +12,6 @@ Route::any("/favicon", "index/favicon");
 Route::get("/plugins/:dir/static/[:file]", "\PluginStaticSystem@index")->pattern(['dir' => '\w+', 'file' => '[\w||\s\-].*']); //插件静态资源路由文件
 Route::any("/manifest.json", "index/manifest")->cache(60 * 10);
 Route::any("/searchEngine/searchEngine", "searchEngine/searchEngine");
-
 Route::group("/plugins", function () {
     $pluginsDir = root_path() . "plugins/";
     if (is_dir($pluginsDir)) {

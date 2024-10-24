@@ -5,12 +5,12 @@ ini_set('memory_limit', '500M');
 
 class PluginsInstall
 {
-    protected string $archiveFile = '';//升级文件地址
-    protected string $extractPath = '';//解压目录地址
-    protected string $root_path = '';//程序根目录
-    public string $download = '';//升级zip文件下载地址
-    protected string $directory = '';//插件目录名称
-    protected string $update_sql = '';//升级sql文件地址
+    protected  $archiveFile = '';//升级文件地址
+    protected  $extractPath = '';//解压目录地址
+    protected  $root_path = '';//程序根目录
+    public  $download = '';//升级zip文件下载地址
+    protected  $directory = '';//插件目录名称
+    protected  $update_sql = '';//升级sql文件地址
 
     //构造方法初始化一些数据
     function __construct($info)
