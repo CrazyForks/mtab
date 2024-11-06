@@ -17,3 +17,6 @@ mtab.zip
 /public/dist/
 /public/static/exportsTabLink.json
 /vendor
+xy.pem
+/plugins/
+/public/browserExt.zip

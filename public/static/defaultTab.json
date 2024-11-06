@@ -748,7 +748,8 @@
       "timeLunar": true,
       "time24": true,
       "maxColumn": 14,
-      "latestPageGroup": false
+      "latestPageGroup": false,
+      "bottom2top":true
     }
   }
 }

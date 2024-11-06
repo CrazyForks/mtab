@@ -250,8 +250,13 @@ alter table note
 alter table note
     add weight int default 0 null;
 
+
+alter table note
+    add sort int default 0 null;
+
 create index note_user_id_index
     on note (user_id);
+
 
 #创建search_engine数据表
 
@@ -559,4 +564,12 @@ ON DUPLICATE KEY UPDATE name = VALUES(name), version = VALUES(version), tips = V
 
 INSERT INTO card (name, name_en, version, tips, src, url, `window`)
 VALUES ('待办事项', 'todo', 8, '快捷添加待办事项', '/plugins/todo/static/ico.png', '/plugins/todo/card', '/plugins/todo/window')
+ON DUPLICATE KEY UPDATE name = VALUES(name), version = VALUES(version), tips = VALUES(tips), src = VALUES(src), url = VALUES(url), `window` = VALUES(`window`);
+
+INSERT INTO card (name, name_en, version, tips, src, url, `window`)
+VALUES ('倒计时', 'countdown', 8, '个性化自定义事件的倒计时组件', '/plugins/countdown/static/ico.png', '/plugins/countdown/card', '/plugins/countdown/window')
+ON DUPLICATE KEY UPDATE name = VALUES(name), version = VALUES(version), tips = VALUES(tips), src = VALUES(src), url = VALUES(url), `window` = VALUES(`window`);
+
+INSERT INTO card (name, name_en, version, tips, src, url, `window`)
+VALUES ('纪念日', 'commemorate', 8, '个性化自定义事件的纪念日组件', '/plugins/commemorate/static/ico.png', '/plugins/commemorate/card', '/plugins/commemorate/window')
 ON DUPLICATE KEY UPDATE name = VALUES(name), version = VALUES(version), tips = VALUES(tips), src = VALUES(src), url = VALUES(url), `window` = VALUES(`window`);

@@ -4,7 +4,6 @@ namespace app\controller;
 
 use app\BaseController;
 use app\model\CardModel;
-use app\model\SettingModel;
 
 class Card extends BaseController
 {

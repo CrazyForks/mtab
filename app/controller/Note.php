@@ -5,7 +5,6 @@ namespace app\controller;
 
 
 use app\BaseController;
-use think\Exception;
 
 class Note extends BaseController
 {
@@ -13,13 +12,40 @@ class Note extends BaseController
     public function get(): \think\response\Json
     {
         $user = $this->getUser();
-        $sort = $this->request->get('sort', 'desc');
         $limit = $this->request->get('limit', 999999);
         if (!$user) {
             return $this->success('', []);
         }
-        $data = (new \app\model\NoteModel)->where("user_id", $user['user_id'])->field('user_id,id,title,create_time,update_time,weight')->order('id', $sort)->limit($limit)->select();
+        $data = (new \app\model\NoteModel)->where("user_id", $user['user_id'])->field('user_id,id,title,create_time,update_time,weight,sort')->order(['sort'=>'asc','create_time'=>'desc'])->limit($limit)->select();
         return $this->success('ok', $data);
+    }
+
+    function sort(): \think\response\Json
+    {
+        $user = $this->getUser(true);
+        $ids = $this->request->post('ids', []);
+        $data = (new \app\model\NoteModel)->field("id,user_id,sort")->where("user_id", $user['user_id'])->whereIn('id', $ids)->select()->toArray();
+        //查询到和id做个比对重新设置sort入库，批量入库，
+        $data_map = [];
+        foreach ($data as $k => $v) {
+            $data_map[$v['id']] = $v;
+        }
+        $update_data = [];
+        foreach ($ids as $k => $v) {
+            if (isset($data_map[$v])) {
+                $update_data[] = [
+                    "id" => $v,
+                    "sort" => $k
+                ];
+            }
+        }
+        try {
+            (new \app\model\NoteModel)->saveAll($update_data);
+        } catch (\Exception $e) {
+            return $this->error('排序失败');
+        }
+        return $this->success('ok');
+
     }
 
     //获取文本
@@ -28,11 +54,7 @@ class Note extends BaseController
         $user = $this->getUser(true);
         $id = $this->request->get('id');
         $data = (new \app\model\NoteModel)->where("user_id", $user['user_id'])->field("text,id")->where('id', $id)->find();
-        try {
-            return response($data['text']);
-        } catch (Exception $e) {
-            return response('');
-        }
+        return response($data['text']);
     }
 
     function setWeight(): \think\response\Json

@@ -4,7 +4,6 @@
  * @Date: 2022-09-26 17:52:37
  * @LastEditTime: 2022-09-26 18:16:31
  */
-
 return [
     // 默认使用的数据库连接配置
     'default'         => env('database.driver', 'mysql'),

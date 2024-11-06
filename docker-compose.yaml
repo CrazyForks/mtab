@@ -2,9 +2,9 @@ version: '3'
 services:
   mTab:
     image: itushan/php74:1.3
-    container_name: mTabServer
+    container_name: mTabServers
     ports:
-      - "3300:80"
+      - "3321:80"
     volumes:
       - ./:/app
     environment:

@@ -120,7 +120,6 @@ class Api extends BaseController
             } catch (\Exception $e) {
                 return $this->error($e->getMessage());
             }
-
         }
         return $this->error('发送失败');
     }
@@ -241,7 +240,6 @@ class Api extends BaseController
             if ($icon) {
                 return $this->success(['src' => $icon, 'name' => $title]);
             }
-
         } catch (\Exception $e) {
             return $this->error('没有抓取到图标');
         }
@@ -341,26 +339,13 @@ class Api extends BaseController
             mkdir($remotePath, 0755, true);
         }
         try {
-            $response = $client->request('GET', $url, [
+            $client->request('GET', $url, [
                 'sink' => $downloadPath,
                 'headers' => [
                     'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
                 ]
             ]);
-            $realPath = joinPath(public_path(), $path . $name);
-            $hash = hash_file('md5', $realPath);
-            $check = FileModel::where('hash', $hash)->find();
-            if ($check) {
-                try {
-                    if (joinPath(public_path(), $check['path']) !== $realPath) {
-                        unlink($realPath);
-                    }
-                } catch (\Exception $e) {
-                }
-                return $check['path'];
-            }
-            FileModel::addFile($path . $name, $user['user_id'] ?? null);
-            return $path . $name;
+            return FileModel::addFile($path . $name, $user['user_id'] ?? null);
         } catch (RequestException $e) {
         }
         return false;
@@ -392,7 +377,8 @@ class Api extends BaseController
         if (empty($file)) {
             return $this->error('not File');
         }
-        $maxSize = (double)$this->systemSetting('upload_size', '2');
+        $calc = $this->request->header("Calc");
+        $maxSize = (float)$this->systemSetting('upload_size', '2');
         if ($file->getSize() > 1024 * 1024 * $maxSize) {
             $limit = $maxSize < 1 ? ($maxSize * 1000) . 'KB' : ($maxSize) . 'MB';
             return $this->error("文件最大$limit,请压缩后再试");
@@ -400,21 +386,10 @@ class Api extends BaseController
         if (in_array(strtolower($file->getOriginalExtension()), ['png', 'jpg', 'jpeg', 'webp', 'ico', 'svg'])) {
             // 验证文件并保存
             try {
-                $cdn = $this->systemSetting('assets_host', '/', true);
                 // 构建保存路径
                 $savePath = '/images/' . date('Y/m/d');
                 $hash = Str::random(32);
                 $fileName = $hash . '.' . $file->getOriginalExtension();
-                $hash = $file->hash('md5');
-                $check = FileModel::where('hash', $hash)->find();
-                if ($check) {
-                    try {
-                        unlink($file->getRealPath());
-                    } catch (\Exception $e) {
-                    }
-                    $dt = ['url' => joinPath($cdn, $check['path'])];
-                    return $this->success($dt);
-                }
                 $filePath = Filesystem::disk('images')->putFileAs($savePath, $file, $fileName);
                 $minPath = '';
                 if ($type == 'icon' || $type == 'avatar') {
@@ -426,10 +401,18 @@ class Api extends BaseController
                     $fp = joinPath(public_path(), $filePath);
                     $image = new \ImageBack($fp);
                     $image->resize(400, 0)->save(joinPath(public_path(), $minPath));
-                    FileModel::addFile($minPath, $user['user_id'] ?? null);
+                    $minPath = FileModel::addFile($minPath, $user['user_id'] ?? null);
                 }
-                FileModel::addFile($filePath, $user['user_id'] ?? null);
-                return $this->success(['url' => $cdn . $filePath, "minUrl" => joinPath($cdn, $minPath)]);
+                //如果包含裁剪头就裁剪图片
+                if ($calc) {
+                    $w = (int)explode("x", $calc)[0];
+                    $h = (int)explode("x", $calc)[1];
+                    $fp = joinPath(public_path(), $filePath);
+                    $image = new \ImageBack($fp);
+                    $image->resize($w, $h)->save($fp);
+                }
+                $filePath = FileModel::addFile($filePath, $user['user_id'] ?? null);
+                return $this->success(['url' => $filePath, "minUrl" => $minPath, 'filename' => $fileName]);
             } catch (\think\exception\ValidateException $e) {
                 return $this->error($e->getMessage());
                 // 验证失败，给出错误提示
@@ -457,8 +440,8 @@ class Api extends BaseController
             $fileName = $hash . '.' . $file->getOriginalExtension();
             $filePath = Filesystem::disk('images')->putFileAs($savePath, $file, $fileName);
             $cdn = $this->systemSetting('assets_host', '/', true);
-            FileModel::addFile($filePath, $user['user_id'] ?? null);
-            return $this->success(['url' => $cdn . $filePath]);
+            $path = FileModel::addFile($filePath, $user['user_id'] ?? null);
+            return $this->success(['url' => $cdn . $path]);
         } catch (\think\exception\ValidateException $e) {
             // 验证失败，给出错误提示
             // ...
@@ -475,5 +458,48 @@ class Api extends BaseController
             return $this->success("ok", $data);
         }
         return $this->error("not login");
+    }
+
+    function cardImages(): \think\response\Json
+    {
+        $list = [];
+        $webPath = '/static/CardBackground/bg/';
+        $dirPath = public_path($webPath);
+        $dir = opendir($dirPath);
+        while (($file = readdir($dir)) !== false) {
+            if ($file != "." && $file != "..") {
+                if (is_file(joinPath($dirPath, $file))) {
+                    $list[] = [
+                        "thumbor" => joinPath($webPath, $file),
+                        "url" => joinPath($webPath, $file),
+                    ];
+                }
+            }
+        }
+        //针对文件的创建时间排序
+        usort($list, function ($a, $b) {
+            return filemtime(joinPath(public_path(), $b['thumbor'])) - filemtime(joinPath(public_path(), $a['thumbor']));
+        });
+        return $this->success($list);
+    }
+
+    function moveFile(): \think\response\Json
+    {
+        $this->getAdmin();
+        $old = $this->request->post("old");
+        $new = $this->request->post("new");
+        FileModel::moveFile($old, $new);
+        return $this->success("文件移动成功");
+    }
+
+    function delImages(): \think\response\Json
+    {
+        $this->getAdmin();
+        $url = $this->request->post('url');
+        $p = joinPath(public_path(), $url);
+        if (file_exists($p)) {
+            FileModel::delFile($url);
+        }
+        return $this->success("删除完毕");
     }
 }

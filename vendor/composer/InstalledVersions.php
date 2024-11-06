@@ -39,12 +39,12 @@ private static $installed = array (
   array (
     'guzzlehttp/guzzle' => 
     array (
-      'pretty_version' => '7.8.2',
-      'version' => '7.8.2.0',
+      'pretty_version' => '7.9.2',
+      'version' => '7.9.2.0',
       'aliases' => 
       array (
       ),
-      'reference' => 'f4152d9eb85c445fe1f992001d1748e8bec070d2',
+      'reference' => 'd281ed313b989f213357e3be1a179f02196ac99b',
     ),
     'guzzlehttp/promises' => 
     array (
@@ -57,12 +57,12 @@ private static $installed = array (
     ),
     'guzzlehttp/psr7' => 
     array (
-      'pretty_version' => '1.9.1',
-      'version' => '1.9.1.0',
+      'pretty_version' => '2.7.0',
+      'version' => '2.7.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => 'e4490cabc77465aaee90b20cfc9a770f8c04be6b',
+      'reference' => 'a70f5c95fb43bc83f07c9c948baa0dc1829bf201',
     ),
     'league/flysystem' => 
     array (
@@ -75,12 +75,12 @@ private static $installed = array (
     ),
     'league/mime-type-detection' => 
     array (
-      'pretty_version' => '1.15.0',
-      'version' => '1.15.0.0',
+      'pretty_version' => '1.16.0',
+      'version' => '1.16.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => 'ce0f4d1e8a6f4eb0ddff33f57c69c50fd09f4301',
+      'reference' => '2d6702ff215bf922936ccc1ad31007edc76451b9',
     ),
     'nette/mail' => 
     array (
@@ -119,6 +119,22 @@ private static $installed = array (
       'reference' => 'bb5906edc1c324c9a05aa0873d40117941e5fa90',
     ),
     'psr/http-client-implementation' => 
+    array (
+      'provided' => 
+      array (
+        0 => '1.0',
+      ),
+    ),
+    'psr/http-factory' => 
+    array (
+      'pretty_version' => '1.1.0',
+      'version' => '1.1.0.0',
+      'aliases' => 
+      array (
+      ),
+      'reference' => '2b4765fddfe3b508ac62f829e852b1501d3f6e8a',
+    ),
+    'psr/http-factory-implementation' => 
     array (
       'provided' => 
       array (

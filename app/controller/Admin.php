@@ -173,10 +173,21 @@ class Admin extends BaseController
     function getUserLine(): \think\response\Json
     {
         $this->getAdmin();
-        $result = UserModel::whereMonth('create_time');
+        $today = new DateTime();
+        $firstDayOfMonth = new DateTime($today->format('Y-m-01'));
+        $lastDayOfMonth = new DateTime($today->format('Y-m-t'));
+        $formatDate = function ($date) {
+            return $date->format('Y-m-d');
+        };
+        $defaultDate = [
+            $formatDate($firstDayOfMonth),
+            $formatDate($lastDayOfMonth)
+        ];
+        $dateSelect = $this->request->post('dateSelect', $defaultDate);
+        $result = UserModel::whereBetweenTime('create_time', $dateSelect[0], $dateSelect[1]);  // 当前月
         $result = $result->field('DATE_FORMAT(create_time, "%Y-%m-%d") as time, count(id) as total');
         $result = $result->group('time')->select();
-        return $this->success('ok', $this->render($result));
+        return $this->success('ok', $this->render($result, $dateSelect[0], $dateSelect[1]));
     }
 
     function getHotTab(): \think\response\Json
@@ -186,7 +197,7 @@ class Admin extends BaseController
         return $this->success('ok', $list);
     }
 
-    private function render($arr): array
+    private function render($arr, $start, $end): array
     {
         $info = [];
         foreach ($arr as $key => $value) {
@@ -194,10 +205,6 @@ class Admin extends BaseController
         }
         $time = [];
         $total = [];
-        //当月的第一天
-        $start = date('Y-m-01', strtotime(date('Y-m-d')));
-        //当月的最后一天
-        $end = date('Y-m-d', strtotime(date('Y-m-01') . ' +1 month -1 day'));
         $start_date = new DateTime($start);
         $end_date = new DateTime($end);
         $interval = new DateInterval('P1D');

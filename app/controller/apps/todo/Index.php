@@ -47,9 +47,6 @@ class Index extends PluginsBase
         $folder = $this->request->post("folder");
         $form = $this->request->post();
         if ($id) {
-            if (empty($form['expire_time'])) {
-                unset($form['expire_time']);
-            }
             if (isset($form['todo']) && mb_strlen($form['todo']) > 500) {
                 return $this->error("待办内容不能超过500字，请分割待办事项");
             }

@@ -1,8 +1,8 @@
 <?php
 //程序版本号，请勿修改
-const app_version = '2.3.3';
+const app_version = '2.4.3';
 //程序内部更新版本代码，请勿修改
-const app_version_code = 235;
+const app_version_code = 243;
 // 应用公共文件
 function validateEmail($email): bool
 {
@@ -29,9 +29,9 @@ function renderToken($t = 'tab'): string
     return md5($s);
 }
 
-function joinPath($path1, $path2)
+function joinPath($path1, $path2='')
 {
-    return preg_replace("#//#", "/", $path1 . $path2);
+    return preg_replace("#/+/#", "/", $path1 . $path2);
 }
 
 function getRealIp(): string

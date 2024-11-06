@@ -9,32 +9,36 @@ use app\model\LinkModel;
 use app\model\TabbarModel;
 use app\model\UserSearchEngineModel;
 use think\facade\Cache;
-use think\facade\Db;
 
 class Link extends BaseController
 {
     public function update(): \think\response\Json
     {
         $user = $this->getUser(true);
-        if ($user) {
-            $link = $this->request->post("link", []);
-            if ($link) {
-                $is = LinkModel::where("user_id", $user['user_id'])->find();
-                if ($is) {
-                    HistoryModel::create(['user_id' => $user['user_id'], 'link' => $is['link'], 'create_time' => date("Y-m-d H:i:s")]); //历史记录备份,用于用户误操作恢复用途
-                    $ids = HistoryModel::where("user_id", $user['user_id'])->order("id", 'desc')->limit(50)->select()->toArray();
-                    $ids = array_column($ids, "id");
-                    HistoryModel::where("user_id", $user['user_id'])->whereNotIn("id", $ids)->delete();
-                    $is->link = $link;
-                    $is->save();
-                } else {
-                    LinkModel::create(["user_id" => $user['user_id'], "link" => $link]);
+        $error = "";
+        try {
+            if ($user) {
+                $link = $this->request->post("link", []);
+                if (is_array($link)) {
+                    $is = LinkModel::where("user_id", $user['user_id'])->find();
+                    if ($is) {
+                        HistoryModel::create(['user_id' => $user['user_id'], 'link' => $is['link'], 'create_time' => date("Y-m-d H:i:s")]); //历史记录备份,用于用户误操作恢复用途
+                        $ids = HistoryModel::where("user_id", $user['user_id'])->order("id", 'desc')->limit(50)->select()->toArray();
+                        $ids = array_column($ids, "id");
+                        HistoryModel::where("user_id", $user['user_id'])->whereNotIn("id", $ids)->delete();
+                        $is->link = $link;
+                        $is->save();
+                    } else {
+                        LinkModel::create(["user_id" => $user['user_id'], "link" => $link]);
+                    }
+                    Cache::delete("Link.{$user['user_id']}");
+                    return $this->success('ok');
                 }
-                Cache::delete("Link.{$user['user_id']}");
-                return $this->success('ok');
             }
+        } catch (\Throwable $th) {
+            $error = $th->getMessage();
         }
-        return $this->error('保存失败');
+        return $this->error('保存失败'.$error);
     }
 
     public function get(): \think\response\Json

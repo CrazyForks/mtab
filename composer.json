@@ -27,7 +27,6 @@
     "ext-json": "*",
     "guzzlehttp/guzzle": "^7.7",
     "ext-openssl": "*",
-    "nette/mail": "^3.1",
     "ext-fileinfo": "*",
     "topthink/think-filesystem": "^2.0",
     "ext-mysqli": "*",
@@ -39,7 +38,8 @@
     "ext-mbstring": "*",
     "ext-bcmath": "*",
     "ext-gd": "*",
-    "ext-libxml": "*"
+    "ext-libxml": "*",
+    "nette/mail": "^3.1"
   },
   "require-dev": {
     "symfony/var-dumper": "^4.2",
